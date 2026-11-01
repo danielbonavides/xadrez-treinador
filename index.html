@@ -164,6 +164,22 @@ let lastMove=null;let current=null,sel=null,result=null,visibleState=null,pendin
 
 // Backup compatível com exportações antigas, sem substituir dados existentes.
 function attemptKey(a){return JSON.stringify([a.id,a.ply,a.uci_tentado,a.uci_sugerido_g5,a.modalidade,a.perda_cp_bruta,a.acertou]);}
+function mergeAttemptHistories(currentRecords,backupRecords){
+ const merged=currentRecords.slice();
+ const eventIds=new Set(currentRecords.filter(a=>typeof a.event_id==='string').map(a=>a.event_id));
+ const legacyCounts=new Map();
+ currentRecords.filter(a=>!a.event_id).forEach(a=>{const k=attemptKey(a);legacyCounts.set(k,(legacyCounts.get(k)||0)+1);});
+ const seenLegacy=new Map();
+ for(const record of backupRecords){
+  if(typeof record.event_id==='string'&&record.event_id.length){
+   if(!eventIds.has(record.event_id)){merged.push(record);eventIds.add(record.event_id);}
+  }else{
+   const k=attemptKey(record),n=(seenLegacy.get(k)||0)+1;seenLegacy.set(k,n);
+   if(n>(legacyCounts.get(k)||0))merged.push(record);
+  }
+ }
+ return merged;
+}
 $('importProgress').addEventListener('change',async function(){
  const file=this.files&&this.files[0];if(!file)return;
  const notice=$('importNotice');
@@ -173,12 +189,11 @@ $('importProgress').addEventListener('change',async function(){
   const records=Array.isArray(incoming)?incoming:incoming&&incoming.puzzles_tentados;
   if(!Array.isArray(records)||records.length>50000)throw Error('Formato incompatível ou histórico muito extenso.');
   if(!records.every(a=>a&&typeof a==='object'&&!Array.isArray(a)&&typeof a.id==='string'&&typeof a.uci_tentado==='string'&&a.id.length<80&&/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(a.uci_tentado)))throw Error('Tentativas inválidas no arquivo.');
-  const existing=new Set(attempts.map(attemptKey));
-  const additions=records.filter(a=>{const k=attemptKey(a);if(existing.has(k))return false;existing.add(k);return true;});
-  const merged=attempts.concat(additions);
+  const merged=mergeAttemptHistories(attempts,records);
+  const additions=merged.length-attempts.length;
   localStorage.setItem('xadrez_v1_attempts',JSON.stringify(merged));
   attempts=merged;
-  notice.textContent='Histórico conciliado: '+additions.length+' registros adicionados; '+attempts.length+' no total.';
+  notice.textContent='Histórico conciliado: '+additions+' registros adicionados; '+attempts.length+' no total.';
   if(current)$('progressText').textContent='Posição '+counter+' de '+queue.length+'. Tentativas registradas: '+attempts.length+'.';
  }catch(error){notice.textContent='Importação não aplicada: '+error.message;}
  this.value='';
@@ -235,7 +250,7 @@ function commitLegalMove(move){
  sel=null;
  pendingPromotion=null;
  togglePromotionUi();
- attempts.push({id:current.id,ply:current.ply,uci_tentado:uci,uci_sugerido_g5:current.melhor_uci,acertou:correct,modalidade:current.modalidade,perda_cp_bruta:current.perda_cp});
+ attempts.push({event_id:'evt_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,12),timestamp_utc:new Date().toISOString(),id:current.id,ply:current.ply,uci_tentado:uci,uci_sugerido_g5:current.melhor_uci,acertou:correct,modalidade:current.modalidade,perda_cp_bruta:current.perda_cp});
  try{localStorage.setItem('xadrez_v1_attempts',JSON.stringify(attempts));}catch(e){}
  $('feedback').className='feedback '+(correct?'correct':'error');
  $('feedback').innerHTML=(correct?'<b>Você encontrou a sugestão do G5.</b>':'<b>Lance legal, mas diferente da sugestão do G5.</b>')+`<p>Lance realizado: <b>${escapeText(uci)}</b> · Sugestão: <b>${escapeText(current.melhor_uci)}</b> · Jogada histórica: <b>${escapeText(current.san_jogado)}</b> · Perda CP indicativa: <b>${current.perda_cp}</b>.</p><small>Exercício exploratório: não certificado como erro por reanálise independente.</small>`;
