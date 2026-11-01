@@ -39,3 +39,11 @@ Correção no commit `6425bc61`: novos registros recebem `event_id` e timestamp 
 **9/9 verificações executáveis em JavaScript e invariantes estruturais PASS:** sintaxe; duas tentativas legadas iguais; idempotência legado; IDs novos distintos; ID novo repetido; importação mista; chaves áudio/histórico preservadas; 240 identificadores. Testes executados em JavaScript isolado, **não** em Safari/Chromium. Risco residual: backups legados sem IDs não permitem identificar inequivocamente tentativas iguais provenientes de fontes independentes.
 
 **Critérios de homologação visual no iPhone:** alternar 3 temas e recarregar; verificar legibilidade das peças SVG nas duas cores; confirmar seta do último lance com Brancas e Pretas; exportar backup antes de importar; conferir que importação mantém tentativas e repetir importação não aumenta contagem. Recomenda-se testar importação em perfil/dispositivo descartável até completar testes de navegador automatizados.
+
+## Homologação visual iPhone — 01/11/2026
+
+O titular confirmou seis testes humanos PASS, sem observações negativas: (1) carregamento da v1.2 no Safari; (2) alternância dos temas; (3) peças legíveis; (4) seta após lance; (5) orientação da seta com Pretas; (6) persistência do tema depois de reabrir.
+
+**Parecer:** GO visual restrito aos cenários humanos executados. Não constitui homologação da importação JSON nem regressão integral. A homologação foi feita no caminho `/teste-v1.2/`, que usa `xadrez_v1_2_test_attempts` isolado. A branch de entrega usa `xadrez_v1_attempts` original, preservado. A diferença intencional de chaves deve ser considerada ao comparar comportamentos.
+
+**Gate mínimo antes de merge:** testar exportação, importação, reimportação idempotente e conservação da multiplicidade de tentativas em ambiente de teste; confirmar comportamento de erro de arquivo e quota de armazenamento. Preservar a v1.1.4 em produção e não alterar histórico real para teste.
