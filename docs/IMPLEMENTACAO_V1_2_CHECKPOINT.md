@@ -28,6 +28,14 @@
 4. Exportar histórico e importar backup em ambiente isolado: sem duplicar nem apagar tentativas.
 5. Regressão motor: legalidade dos 240 exercícios e movimentos especiais (roque, en passant, promoções).
 6. Conferir som, histórico e compatibilidade mobile.
-7. Revisar política de importação: tentativas idênticas historicamente repetidas podem ser semanticamente distintas. O deduplicador atual é por conteúdo, não por ID de evento; não promover até decidir o modelo de identidade das tentativas.
+7. Compatibilidade: backups legados não têm event_id. A conciliação preserva a maior multiplicidade observada de registros idênticos; não pode provar a identidade de eventos iguais entre backups diferentes. Novos registros passam a receber event_id para idempotência.
 
 **Parecer:** GO para revisão técnica/execução de testes na branch; NO-GO para merge/publicação.
+
+## Regressão direcionada — 01/11/2026
+
+Correção no commit `6425bc61`: novos registros recebem `event_id` e timestamp UTC. A importação de backups legados preserva multiplicidade de tentativas iguais, e a importação de novos backups deduplica por `event_id`.
+
+**9/9 verificações executáveis em JavaScript e invariantes estruturais PASS:** sintaxe; duas tentativas legadas iguais; idempotência legado; IDs novos distintos; ID novo repetido; importação mista; chaves áudio/histórico preservadas; 240 identificadores. Testes executados em JavaScript isolado, **não** em Safari/Chromium. Risco residual: backups legados sem IDs não permitem identificar inequivocamente tentativas iguais provenientes de fontes independentes.
+
+**Critérios de homologação visual no iPhone:** alternar 3 temas e recarregar; verificar legibilidade das peças SVG nas duas cores; confirmar seta do último lance com Brancas e Pretas; exportar backup antes de importar; conferir que importação mantém tentativas e repetir importação não aumenta contagem. Recomenda-se testar importação em perfil/dispositivo descartável até completar testes de navegador automatizados.
