@@ -1,21 +1,25 @@
-# XADREZ — Treinador Web (v1.1.3)
+# XADREZ — Treinador de Xadrez
 
-**Status: PRODUÇÃO HOMOLOGADA — 31/10/2026.**
+Aplicação web para praticar xadrez com exercícios interativos, análise de posições e acompanhamento de desempenho.
 
-**Abrir no iPhone / Safari:** https://danielbonavides.github.io/xadrez-treinador/
+## Acessar
 
-Site estático publicado pelo GitHub Pages (branch `main`, raiz), com 240 posições de treino.
+**[Abrir o treinador online](https://danielbonavides.github.io/xadrez-treinador/)**
 
-- Site e exercícios são **públicos**: não há login nem controle de acesso.
-- A versão pública remove informações identificadoras de partidas individuais (URLs, datas, IDs e nomes de usuário originais).
-- As posições FEN e sugestões de lances ficam disponíveis a qualquer visitante.
-- O progresso é salvo no `localStorage` do navegador, **sem sincronização entre dispositivos**.
-- Sem backend, n8n, Cloudflare ou bibliotecas externas via CDN.
-- Para novas versões, preservar IDs `EX0001`–`EX0240` e adicionar exercícios a partir de `EX0241`.
-- Repositório de engenharia, documentação e análises: `danielbonavides/XADREZ` (**privado**).
+O aplicativo funciona em navegadores modernos, incluindo o Safari no iPhone. Não exige instalação ou cadastro.
 
-## Homologação
+## Funcionalidades
 
-O titular confirmou no iPhone o acesso pelo Safari, os movimentos das peças e a persistência do progresso após a publicação; o atalho “XADREZ — Treinador pessoal” foi adicionado à Tela de Início. O script de publicação confirmou HTTPS e a presença de `EX0240`. A integração GitHub confirmou a existência de 240 IDs de exercício e que o repositório original permanece privado.
+- Tabuleiro interativo com validação de lances.
+- Exercícios de tomada de decisão em posições de xadrez.
+- Sugestões de jogadas e feedback após cada tentativa.
+- Visão geral de desempenho e consulta a aberturas.
+- Interface adaptada para celulares e computadores.
 
-Esta é a versão estável de referência; novas alterações devem preservar os dados já salvos no Safari. O registro técnico detalhado está no repositório privado `XADREZ`, em `docs/HOMOLOGACAO_XADREZ_WEB_V1_1_3_PRODUCAO_20261031.md`.
+## Progresso
+
+O histórico de tentativas é armazenado localmente no navegador utilizado. Ele não é sincronizado automaticamente entre dispositivos.
+
+## Sobre
+
+Projeto web independente para estudo e prática de xadrez. Os exercícios e análises têm finalidade educativa.
