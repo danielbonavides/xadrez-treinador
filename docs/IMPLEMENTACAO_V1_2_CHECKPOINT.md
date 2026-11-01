@@ -47,3 +47,22 @@ O titular confirmou seis testes humanos PASS, sem observações negativas: (1) c
 **Parecer:** GO visual restrito aos cenários humanos executados. Não constitui homologação da importação JSON nem regressão integral. A homologação foi feita no caminho `/teste-v1.2/`, que usa `xadrez_v1_2_test_attempts` isolado. A branch de entrega usa `xadrez_v1_attempts` original, preservado. A diferença intencional de chaves deve ser considerada ao comparar comportamentos.
 
 **Gate mínimo antes de merge:** testar exportação, importação, reimportação idempotente e conservação da multiplicidade de tentativas em ambiente de teste; confirmar comportamento de erro de arquivo e quota de armazenamento. Preservar a v1.1.4 em produção e não alterar histórico real para teste.
+
+## Testes direcionados da importação — 01/11/2026
+
+Commit da correção: `214aefca48f7f71b73b876e4d39577322bc53799`.
+
+O handler de importação foi executado em JavaScript com seleção de arquivo e armazenamento simulados. Resultados:
+
+| Caso | Evidência | Resultado |
+| --- | --- | --- |
+| Backup válido | 0→1 registros; 1 escrita | PASS |
+| Reimportação idempotente | 1→1; 0 escritas | PASS |
+| Duas tentativas legadas iguais | 1→2, preservando multiplicidade | PASS |
+| Tentativa inválida | 1→1; 0 escritas | PASS |
+| Armazenamento sem quota | 1→1 em memória e storage simulado; erro reportado | PASS |
+| Sintaxe JavaScript | Código integral analisado por parser JS | PASS |
+
+Preview isolada `teste-v1.2/index.html` sincronizada com o código corrigido; chaves próprias `xadrez_v1_2_test_attempts`, `xadrez_web_sound_test_v1_2` e `xadrez_web_theme_test_v1_2`. Testes HTML/DOM reais em Safari ainda não executados. Visual no iPhone: 6/6 PASS reportados pelo titular, antes da sincronização corretiva limitada à importação.
+
+**Parecer:** GO para preparar publicação da candidata; para o merge final, recomenda-se somente um smoke test no endereço isolado: exportar arquivo, importá-lo, importar outra vez e observar contagem estável. Não repetir a homologação visual aprovada.
