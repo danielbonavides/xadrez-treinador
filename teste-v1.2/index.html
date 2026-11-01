@@ -191,8 +191,10 @@ $('importProgress').addEventListener('change',async function(){
   if(!records.every(a=>a&&typeof a==='object'&&!Array.isArray(a)&&typeof a.id==='string'&&typeof a.uci_tentado==='string'&&a.id.length<80&&/^[a-h][1-8][a-h][1-8][qrbn]?$/.test(a.uci_tentado)))throw Error('Tentativas inválidas no arquivo.');
   const merged=mergeAttemptHistories(attempts,records);
   const additions=merged.length-attempts.length;
-  localStorage.setItem('xadrez_v1_2_test_attempts',JSON.stringify(merged));
-  attempts=merged;
+  if(additions>0){
+   localStorage.setItem('xadrez_v1_2_test_attempts',JSON.stringify(merged));
+   attempts=merged;
+  }
   notice.textContent='Histórico conciliado: '+additions+' registros adicionados; '+attempts.length+' no total.';
   if(current)$('progressText').textContent='Posição '+counter+' de '+queue.length+'. Tentativas registradas: '+attempts.length+'.';
  }catch(error){notice.textContent='Importação não aplicada: '+error.message;}
