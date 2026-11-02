@@ -7,7 +7,7 @@ fs.writeFileSync('adaptive/revisions.js','const CATALOG_REVISIONS='+JSON.stringi
 // O mapa de ligação legado fica fixado na base auditada, não em futuros catálogos.
 if(!fs.existsSync('adaptive/legacy-revisions.js'))fs.writeFileSync('adaptive/legacy-revisions.js','const LEGACY_REVISIONS='+JSON.stringify(revisions,null,2)+';\n');
 let html=baseline.replace(/v1\.2\.0/gi,'v1.4 · preview').replace('V1.2.0','V1.4 · PREVIEW');
-html=html.replace('<script>const DATA=', '<script src="../adaptive/stockfish-f5.js"></script><script src="../adaptive/core.js"></script><script src="../adaptive/revisions.js"></script><script src="../adaptive/legacy-revisions.js"></script>\n<script>const DATA=');
+html=html.replace('<script>const DATA=', '<script src="../stockfish-240/adapter.js"></script><script src="../adaptive/core.js"></script><script src="../adaptive/revisions.js"></script><script src="../adaptive/legacy-revisions.js"></script>\n<script>const DATA=');
 html=html.replace("const THEME_KEY='xadrez_web_theme_v1'","const THEME_KEY='xadrez_web_test_v1_4_theme'").replace("const AUDIO_KEY='xadrez_web_sound_enabled_v1'","const AUDIO_KEY='xadrez_web_test_v1_4_sound'");
 html=html.replace('<section id="trainer" class="tab">','<section id="trainer" class="tab">'+fs.readFileSync('adaptive/controls.html','utf8'));
 const start=html.indexOf('let lastMove=null;'),end=html.indexOf('function gameFilter(p)');
