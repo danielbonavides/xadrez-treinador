@@ -111,3 +111,14 @@ O titular executou o roteiro na prévia isolada e reportou **8/8 PASS**, sem fal
 Nenhuma correção foi identificada a partir dos resultados humanos reportados. Os testes automatizados (27/27), oráculo python-chess (240/240), CI e testes Chrome permanecem como evidências anteriores, sem serem reexecutados nesta homologação. A confirmação de que a v1.2 preservou histórico e preferências é resultado do teste humano reportado, não uma nova leitura do dispositivo.
 
 **Próximo estado permitido:** PR #3 permanece aberto em rascunho, branch `feat/web-v1.4-adaptive` isolada. A homologação está concluída para a candidata; merge e release aguardam autorização expressa.
+
+
+## F5 — adaptador experimental opcional (implementação parcial)
+
+Foi criado `adaptive/stockfish-f5.js` e acrescentado o painel de leitura em `teste-v1.4/index.html`. A ausência de dados devolve aviso neutro; não há alteração no motor de revisão, histórico, indicadores G5 ou preferências. O gerador de prévia `tools/build-adaptive.cjs` e os fragmentos de origem foram atualizados, com testes em `tests/stockfish-f5.test.cjs`.
+
+**Validação executada neste chat:** 7/7 verificações do adaptador em JS isolado PASS (dados ausentes, contrato sintético, ID divergente, UCI raiz ilegal, alegação indevida de diagnóstico certificado, linhas malformadas, mensagem explícita de experimentalidade). A sintaxe JS do HTML da preview passou. `main/index.html` permanece inalterado. Os testes Node/CI da branch após as alterações F5 não foram executados nem certificados neste chat.
+
+**Limite de integração:** o pacote real `XADREZ_HANDOFF_WEB12_STOCKFISH_240_20261101.zip` (SHA-256 declarado `be8c4c21250c0497e2fce69c0670e62e71f0f4ba743ad8b52d69b4057daf`) não está disponível para leitura/verificação nesta execução. Não houve processamento dos 240 registros reais nem certificação da legalidade integral das PVs. Para PVs de mais de um lance, o adaptador exige flag explícita `legal_moves_verified` do produtor; validação independente da linha inteira segue como pendência de pipeline offline. A versão real do schema `xadrez.pedagogia.v1.3` permanece sujeita a validação contra o pacote, que pode exigir ajustes no parser.
+
+**Publicação:** o arquivo de preview na branch foi alterado, mas a cópia hospedada anteriormente no Sites não foi redeployada por esta execução. `GO_ADAPTER_SCAFFOLD` / `NO_GO_REAL_DATA_ACTIVATION` / `NO_GO_MERGE_RELEASE`. Próximo passo obrigatório: recuperar ZIP, validar schema e PVs, executar testes Node e CI, reconstruir/republicar apenas preview isolada e homologar o novo painel; sem repetir os 8 testes já aprovados da v1.4 quando código dessas funções permanecer idêntico.
