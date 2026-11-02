@@ -50,31 +50,44 @@ $('refreshQueue').addEventListener('click',resetQueue);
 window.addEventListener('storage',e=>{if(e.key===ATTEMPTS_KEY){recorder.reload();attempts=recorder.records;queueReady=false;renderAdaptive();}});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){queueReady=false;renderAdaptive();}});
 
-// F5 experimental: não acoplar ao scheduler nem ao recorder. Sem JSON aprovado, falha fechada.
-const stockfishEvidenceById=Object.create(null);
-function renderStockfishEvidence(){const n=$('stockfishEvidence');if(!n)return;const raw=current&&stockfishEvidenceById[current.id];const model=current?StockfishF5.normalize(raw,current,observationLegal):null;n.textContent=StockfishF5.render(model);}
-
+// Stockfish 240 — evidência pedagógica opcional, isolada do recorder e do scheduler.
+let stockfishPedagogy=null;
+function formatStockfishLine(line){
+ const score=line.mate!==null?'MATE '+(line.mate>0?'+':'')+line.mate:'CP '+(line.cp>0?'+':'')+line.cp;
+ return line.root_uci+' · '+score+' · PV '+line.pv_uci.join(' ')+' · profundidade '+line.depth;
+}
+function renderStockfishEvidence(){
+ const n=$('stockfishEvidence');if(!n)return;
+ if(!current){n.textContent='Nenhum exercício ativo para consultar a evidência experimental.';return;}
+ if(!stockfishPedagogy){n.textContent='Nenhuma evidência Stockfish validada carregada. O treinamento G5 e a repetição adaptativa funcionam normalmente.';return;}
+ const item=stockfishPedagogy.byId.get(current.id);
+ if(!item){n.textContent='Painel experimental indisponível apenas para '+current.id+': '+(stockfishPedagogy.errors.get(current.id)||'evidência ausente')+'. Treinamento G5 e revisão permanecem normais.';return;}
+ const lines=item.lines;
+ const out=[
+  'Sugestão histórica G5: '+item.g5,
+  'Stockfish MultiPV 1: '+formatStockfishLine(lines.multipv_top_1),
+  'Stockfish MultiPV 2: '+formatStockfishLine(lines.multipv_top_2),
+  'Busca forçada do lance humano: '+formatStockfishLine(lines.human_forced),
+  'Busca forçada G5: '+formatStockfishLine(lines.g5_forced),
+  item.different?'G5 e Stockfish divergem. Isso NÃO comprova erro do G5.':'O primeiro lance Stockfish coincide com a sugestão histórica G5.',
+  'CP/MATE na perspectiva de quem joga. Pesquisa experimental; nenhum diagnóstico tático certificado.',
+  item.hint?'Dica experimental: '+item.hint:''
+ ].filter(Boolean);
+ n.textContent=out.join(' | ');
+}
 $('stockfishBundle').addEventListener('change',async function(){
  const file=this.files&&this.files[0];if(!file)return;
  const notice=$('stockfishImportNotice');
  try{
   if(file.size>3*1024*1024)throw Error('Arquivo maior que 3 MB.');
   const bundle=JSON.parse(await file.text());
-  const records=Array.isArray(bundle)?bundle:bundle&&bundle.records;
-  if(!Array.isArray(records)||records.length!==240)throw Error('Esperados exatamente 240 registros.');
-  const next=Object.create(null);let valid=0;
-  for(const raw of records){
-   if(!raw||typeof raw.exercise_id!=='string'||Object.prototype.hasOwnProperty.call(next,raw.exercise_id))throw Error('ID inválido ou duplicado');
-   const ref=DATA.puzzles.find(p=>p.id===raw.exercise_id);
-   if(!ref)throw Error('Exercício desconhecido: '+raw.exercise_id);
-   const parsed=StockfishF5.normalize(raw,ref,observationLegal);
-   if(parsed.status!=='research')throw Error('Evidência inválida: '+raw.exercise_id+' / '+parsed.reason);
-   next[raw.exercise_id]=raw;valid++;
-  }
-  if(valid!==DATA.puzzles.length)throw Error('Catálogo incompleto');
-  Object.keys(stockfishEvidenceById).forEach(k=>delete stockfishEvidenceById[k]);
-  Object.assign(stockfishEvidenceById,next);
-  notice.textContent='240 evidências experimentais carregadas nesta sessão. Nenhum diagnóstico certificado.';
+  const parsed=Adaptive.PedagogyAdapter(bundle,DATA.puzzles,R88);
+  if(!parsed.available)throw Error(parsed.error||parsed.status||'CONTRATO_PEDAGOGICO_INVALIDO');
+  // Um registro ausente/divergente desabilita apenas o painel daquele exercício.
+  // O JSON é somente lido em memória; não é persistido nem enviado ao servidor.
+  stockfishPedagogy=parsed;
+  const st=parsed.stats;
+  notice.textContent=st.valid+'/'+st.total+' evidências validadas; '+st.unavailable+' exercícios sem painel; '+st.divergences+' divergências G5 × Stockfish (não são erros). Nenhum diagnóstico certificado.';
   renderStockfishEvidence();
  }catch(error){notice.textContent='Pacote não aplicado: '+error.message;}
  this.value='';
