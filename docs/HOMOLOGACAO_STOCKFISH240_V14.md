@@ -3,7 +3,7 @@
 **Handoff:** HOF-XWEB-1.2-STOCKFISH240-v1.0  
 **Branch:** `feat/web-v14-stockfish240-homolog-20261102-r2`  
 **Base:** `feat/web-v1.4-adaptive`  
-**GitHub Actions:** [run 41378921072](https://github.com/danielbonavides/xadrez-treinador/actions/runs/41378921072)
+**GitHub Actions:** [run 41379100348](https://github.com/danielbonavides/xadrez-treinador/actions/runs/41379100348)
 
 ## Artefatos auditáveis
 
@@ -23,6 +23,7 @@
 | Divergências G5 × Stockfish | 68 — confirmadas, não classificadas como erros |
 | Contratos Node adaptativos + UI + integração | 46/46 PASS |
 | Testes sintéticos/contrato do adaptador | 19/19 PASS |
+| Chromium browser smoke | PASS — importação local, EX0006, desligar/religar painel, tentativa G5 e revisão em 24 h; sem escrita em produção ou erros de página |
 | JSON ausente/malformado | PASS — treinamento preservado; HTTP N/A porque não há dependência de rede |
 | Registro ausente/duplicado/FEN/ply/G5 divergentes | PASS — isolamento por exercício |
 | Importação local, desligamento/religamento em sessão e persistência | PASS — sem escrita pelo adaptador |
