@@ -7,7 +7,7 @@ function boot(raw='[]',fail=false){
  const storage={getItem:k=>items.has(k)?items.get(k):null,setItem(k,v){if(fail)throw Error('QuotaExceededError');writes.push(k);items.set(k,v);}};
  const document={body:{dataset:{}},getElementById:el,querySelectorAll:()=>[],addEventListener(){},createTextNode:text=>({textContent:text}),createElement:()=>({click(){}})};
  const context=vm.createContext({document,localStorage:storage,window:{localStorage:storage,addEventListener(){},crypto:require('node:crypto').webcrypto},console,URL,Blob,setTimeout});
- for(const file of ['core.js','revisions.js','legacy-revisions.js'])vm.runInContext(fs.readFileSync('adaptive/'+file,'utf8'),context);
+ for(const file of ['stockfish-f5.js','core.js','revisions.js','legacy-revisions.js'])vm.runInContext(fs.readFileSync('adaptive/'+file,'utf8'),context);
  vm.runInContext(html.match(/<script>const DATA=([\s\S]*?)<\/script>/)[0].slice(8,-9),context);
  const run=code=>vm.runInContext(code,context);
  return {el,run,writes,items,setFailure:value=>fail=value};
