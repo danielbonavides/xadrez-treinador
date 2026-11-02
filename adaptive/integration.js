@@ -51,13 +51,14 @@ window.addEventListener('storage',e=>{if(e.key===ATTEMPTS_KEY){recorder.reload()
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){queueReady=false;renderAdaptive();}});
 
 // Stockfish 240 — evidência pedagógica opcional, isolada do recorder e do scheduler.
-let stockfishPedagogy=null;
+let stockfishPedagogy=null,stockfishDisabled=false;
 function formatStockfishLine(line){
  const score=line.mate!==null?'MATE '+(line.mate>0?'+':'')+line.mate:'CP '+(line.cp>0?'+':'')+line.cp;
  return line.root_uci+' · '+score+' · PV '+line.pv_uci.join(' ')+' · profundidade '+line.depth;
 }
 function renderStockfishEvidence(){
  const n=$('stockfishEvidence');if(!n)return;
+ if(stockfishDisabled){n.textContent='Análise Stockfish desligada nesta sessão. Treinamento G5 e repetição adaptativa permanecem normais.';return;}
  if(!current){n.textContent='Nenhum exercício ativo para consultar a evidência experimental.';return;}
  if(!stockfishPedagogy){n.textContent='Nenhuma evidência Stockfish validada carregada. O treinamento G5 e a repetição adaptativa funcionam normalmente.';return;}
  const item=stockfishPedagogy.byId.get(current.id);
@@ -85,10 +86,15 @@ $('stockfishBundle').addEventListener('change',async function(){
   if(!parsed.available)throw Error(parsed.error||parsed.status||'CONTRATO_PEDAGOGICO_INVALIDO');
   // Um registro ausente/divergente desabilita apenas o painel daquele exercício.
   // O JSON é somente lido em memória; não é persistido nem enviado ao servidor.
-  stockfishPedagogy=parsed;
+  stockfishPedagogy=parsed;stockfishDisabled=false;
   const st=parsed.stats;
   notice.textContent=st.valid+'/'+st.total+' evidências validadas; '+st.unavailable+' exercícios sem painel; '+st.divergences+' divergências G5 × Stockfish (não são erros). Nenhum diagnóstico certificado.';
   renderStockfishEvidence();
  }catch(error){notice.textContent='Pacote não aplicado: '+error.message;}
  this.value='';
+});
+$('stockfishDisable').addEventListener('click',()=>{
+ stockfishPedagogy=null;stockfishDisabled=true;$('stockfishBundle').value='';
+ $('stockfishImportNotice').textContent='Análise Stockfish desligada nesta sessão. Nenhuma evidência foi persistida.';
+ renderStockfishEvidence();
 });
