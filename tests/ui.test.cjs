@@ -7,7 +7,8 @@ function boot(raw='[]',fail=false){
  const storage={getItem:k=>items.has(k)?items.get(k):null,setItem(k,v){if(fail)throw Error('QuotaExceededError');writes.push(k);items.set(k,v);}};
  const document={body:{dataset:{}},getElementById:el,querySelectorAll:()=>[],addEventListener(){},createTextNode:text=>({textContent:text}),createElement:()=>({click(){}})};
  const context=vm.createContext({document,localStorage:storage,window:{localStorage:storage,addEventListener(){},crypto:require('node:crypto').webcrypto},console,URL,Blob,setTimeout});
- for(const file of ['stockfish-f5.js','core.js','revisions.js','legacy-revisions.js'])vm.runInContext(fs.readFileSync('adaptive/'+file,'utf8'),context);
+ vm.runInContext(fs.readFileSync('stockfish-240/adapter.js','utf8'),context);
+ for(const file of ['core.js','revisions.js','legacy-revisions.js'])vm.runInContext(fs.readFileSync('adaptive/'+file,'utf8'),context);
  vm.runInContext(html.match(/<script>const DATA=([\s\S]*?)<\/script>/)[0].slice(8,-9),context);
  const run=code=>vm.runInContext(code,context);
  return {el,run,writes,items,setFailure:value=>fail=value};
@@ -17,3 +18,38 @@ test('UI legal commit persists compatible event and updates scheduling; refresh 
 test('UI quota shows unsaved warning and retains downloadable fallback',()=>{const b=boot('[]',true);b.run('startPuzzle();commitLegalMove(R88.legal(visibleState)[0])');assert.equal(b.run('attempts.length'),0);assert.equal(b.run('recorder.pending.length'),1);assert.match(b.el('storageStatus').textContent,/NÃO SALVA/);assert.match(b.el('feedback').textContent,/NÃO SALVA/);assert.equal(b.run('recorder.backup(prefs).puzzles_tentados.length'),1);b.setFailure(false);b.el('retrySave').click();assert.equal(b.run('attempts.length'),1);assert.equal(b.run('recorder.pending.length'),0);});
 test('UI illegal move, empty queue and mode changes do not record',()=>{const b=boot();b.run("startPuzzle();playSquare('e2');playSquare('e7')");assert.equal(b.run('attempts.length'),0);b.el('trainingMode').value='revisao';b.el('trainingMode').handlers.change();assert.match(b.el('feedback').textContent,/Fila concluída/);assert.equal(b.run('current'),null);assert.equal(b.el('show').disabled,true);assert.equal(b.run('attempts.length'),0);});
 test('UI import replay is idempotent, preferences stay current',async()=>{const b=boot(),a=b.run("({id:current?.id||'EX0001',ply:11,uci_tentado:'e2e4',uci_sugerido_g5:'e2e4',acertou:true})");const file={size:100,text:async()=>JSON.stringify({puzzles_tentados:[a,a],adaptive:{preferences:{default_mode:'revisao'}}})};for(let i=0;i<2;i++){b.el('importProgress').files=[file];await b.el('importProgress').handlers.change.call(b.el('importProgress'));}assert.equal(b.run('attempts.length'),2);assert.equal(b.run('prefs.default_mode'),'misto');assert.equal(b.run('projections[0].due_at_utc'),null);});
+
+test('UI Stockfish 240 import validates real PVs and does not change attempts or scheduling',async()=>{
+ const b=boot();b.run('startPuzzle()');
+ const raw=fs.readFileSync('stockfish-240/EXERCICIOS_PUBLICOS_240_RESEARCH.json','utf8');
+ const file={size:Buffer.byteLength(raw),text:async()=>raw};
+ b.el('stockfishBundle').files=[file];await b.el('stockfishBundle').handlers.change.call(b.el('stockfishBundle'));
+ assert.equal(b.run('stockfishPedagogy.stats.valid'),240);
+ assert.equal(b.run('stockfishPedagogy.stats.divergences'),68);
+ assert.match(b.el('stockfishImportNotice').textContent,/240\/240/);
+ assert.match(b.el('stockfishEvidence').textContent,/Sugestão histórica G5/);
+ assert.equal(b.run('attempts.length'),0);
+ assert.equal(b.items.get('xadrez_v1_attempts'),'PRODUCTION_SENTINEL');
+ assert.deepEqual(b.writes,[]);
+});
+test('UI partial evidence disables only its exercise; other puzzles retain the panel',async()=>{
+ const b=boot();b.run('startPuzzle()');
+ const bundle=JSON.parse(fs.readFileSync('stockfish-240/EXERCICIOS_PUBLICOS_240_RESEARCH.json','utf8'));
+ bundle.puzzles=bundle.puzzles.filter(p=>p.exercise_id!=='EX0001');
+ const raw=JSON.stringify(bundle),file={size:Buffer.byteLength(raw),text:async()=>raw};
+ b.el('stockfishBundle').files=[file];await b.el('stockfishBundle').handlers.change.call(b.el('stockfishBundle'));
+ assert.equal(b.run('stockfishPedagogy.stats.valid'),239);
+ assert.match(b.el('stockfishImportNotice').textContent,/239\/240/);
+ assert.match(b.el('stockfishEvidence').textContent,/EX0001.*ID_INEXISTENTE/);
+ b.el('next').click();
+ assert.match(b.el('stockfishEvidence').textContent,/Sugestão histórica G5/);
+ assert.equal(b.run('attempts.length'),0);
+ assert.deepEqual(b.writes,[]);
+});
+test('UI malformed Stockfish JSON is rejected without affecting active G5 exercise',async()=>{
+ const b=boot();b.run('startPuzzle()');const current=b.run('current.id');
+ const file={size:10,text:async()=>'{bad'};
+ b.el('stockfishBundle').files=[file];await b.el('stockfishBundle').handlers.change.call(b.el('stockfishBundle'));
+ assert.match(b.el('stockfishImportNotice').textContent,/Pacote não aplicado/);
+ assert.equal(b.run('current.id'),current);assert.equal(b.run('attempts.length'),0);
+});
