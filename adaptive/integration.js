@@ -53,3 +53,29 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden){queueRead
 // F5 experimental: não acoplar ao scheduler nem ao recorder. Sem JSON aprovado, falha fechada.
 const stockfishEvidenceById=Object.create(null);
 function renderStockfishEvidence(){const n=$('stockfishEvidence');if(!n)return;const raw=current&&stockfishEvidenceById[current.id];const model=current?StockfishF5.normalize(raw,current,observationLegal):null;n.textContent=StockfishF5.render(model);}
+
+$('stockfishBundle').addEventListener('change',async function(){
+ const file=this.files&&this.files[0];if(!file)return;
+ const notice=$('stockfishImportNotice');
+ try{
+  if(file.size>3*1024*1024)throw Error('Arquivo maior que 3 MB.');
+  const bundle=JSON.parse(await file.text());
+  const records=Array.isArray(bundle)?bundle:bundle&&bundle.records;
+  if(!Array.isArray(records)||records.length!==240)throw Error('Esperados exatamente 240 registros.');
+  const next=Object.create(null);let valid=0;
+  for(const raw of records){
+   if(!raw||typeof raw.exercise_id!=='string'||Object.prototype.hasOwnProperty.call(next,raw.exercise_id))throw Error('ID inválido ou duplicado');
+   const ref=DATA.puzzles.find(p=>p.id===raw.exercise_id);
+   if(!ref)throw Error('Exercício desconhecido: '+raw.exercise_id);
+   const parsed=StockfishF5.normalize(raw,ref,observationLegal);
+   if(parsed.status!=='research')throw Error('Evidência inválida: '+raw.exercise_id+' / '+parsed.reason);
+   next[raw.exercise_id]=raw;valid++;
+  }
+  if(valid!==DATA.puzzles.length)throw Error('Catálogo incompleto');
+  Object.keys(stockfishEvidenceById).forEach(k=>delete stockfishEvidenceById[k]);
+  Object.assign(stockfishEvidenceById,next);
+  notice.textContent='240 evidências experimentais carregadas nesta sessão. Nenhum diagnóstico certificado.';
+  renderStockfishEvidence();
+ }catch(error){notice.textContent='Pacote não aplicado: '+error.message;}
+ this.value='';
+});
