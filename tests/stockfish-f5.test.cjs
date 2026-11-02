@@ -15,7 +15,7 @@ test('F5 public 240 dataset is privacy-allowlisted, catalog-matched, and all PVs
  const fs=require('node:fs'),vm=require('node:vm');
  const raw=fs.readFileSync('teste-v1.4/stockfish-240-public.json','utf8'),bundle=JSON.parse(raw);
  const html=fs.readFileSync('index.html','utf8');
- const catalog=JSON.parse(html.match(/const DATA=(.*);\\r?\\n/)[1]).puzzles;
+ const marker='const DATA=';const start=html.indexOf(marker),end=html.indexOf(';\n',start);assert(start>=0&&end>start);const catalog=JSON.parse(html.slice(start+marker.length,end)).puzzles;
  const context=vm.createContext({});
  vm.runInContext(html.slice(html.indexOf('const R88='),html.indexOf('// v1.2.0 — áudio'))+';globalThis.R=R88;',context);
  const R=context.R,byId=new Map(catalog.map(x=>[x.id,x]));
