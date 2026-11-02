@@ -31,10 +31,10 @@ function play(session,uci,R){
  const move=R.legal(session.board).find(x=>R.uci(x)===uci);
  if(!move)return {...session,status:'illegal'};
  const played=session.player_moves.concat(uci),after=R.apply(session.board,move);
- if(uci!==session.line[session.turn])return {...session,board:after,player_moves:played,status:'deviation',deviation_ply:session.turn/2+1,expected_uci:session.line[session.turn]};
- if(session.turn===4)return {...session,board:after,player_moves:played,turn:5,status:'complete'};
+ if(uci!==session.line[session.turn])return {...session,board:after,player_moves:played,status:'deviation',automatic_reply:null,deviation_ply:session.turn/2+1,expected_uci:session.line[session.turn]};
+ if(session.turn===4)return {...session,board:after,player_moves:played,turn:5,status:'complete',automatic_reply:null};
  const replyUci=session.line[session.turn+1],reply=R.legal(after).find(x=>R.uci(x)===replyUci);
- if(!reply)return {...session,board:after,player_moves:played,status:'invalid_response'};
+ if(!reply)return {...session,board:after,player_moves:played,status:'invalid_response',automatic_reply:null};
  return {...session,board:R.apply(after,reply),player_moves:played,opponent_moves:session.opponent_moves.concat(replyUci),turn:session.turn+2,status:'playing',automatic_reply:replyUci};
 }
 root.Sequence3={build,begin,hint,play};
