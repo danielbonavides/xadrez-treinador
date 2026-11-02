@@ -161,7 +161,7 @@ Os testes focados do adaptador tiveram 7/7 PASS antes do uploader; suíte CI da 
 
 ### Testes automatizados
 
-GitHub Actions run **41378044851**: sucesso.
+GitHub Actions run **41378568989**: sucesso.
 
 - Suíte Node adaptativa, UI e integração: **44/44 PASS**.
 - Testes sintéticos e de contrato do adaptador: **19/19 PASS**.
