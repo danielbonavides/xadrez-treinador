@@ -7,11 +7,11 @@ const Adaptive=require('../adaptive/core.js');
 const Evidence=require('./adapter.js');
 global.XadrezEvidence=Evidence;
 const html=fs.readFileSync(path.join(__dirname,'..','teste-v1.4','index.html'),'utf8');
-const inline=html.match(/<script>const DATA=([\\s\\S]*?)<\\/script>/);
+const inline=html.match(/<script>const DATA=([\s\S]*?)<\/script>/);
 assert.ok(inline,'v1.4 preview script missing');
-const body=inline[1],start=body.indexOf('const DATA=')+'const DATA='.length,end=body.indexOf(';\\n',start);
+const body=inline[1],start=body.indexOf('const DATA=')+'const DATA='.length,end=body.indexOf(';\n',start);
 const DATA=JSON.parse(body.slice(start,end));
-const chess=body.match(/const R88=\\{\\};[\\s\\S]*?R88\\.uci=m=>[^;]*;/);
+const chess=body.match(/const R88=\{\};[\s\S]*?R88\.uci=m=>[^;]*;/);
 assert.ok(chess,'R88 missing');
 const R88=vm.runInNewContext(chess[0]+';R88;',Object.create(null),{timeout:3000});
 class Element{
