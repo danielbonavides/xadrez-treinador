@@ -3,7 +3,7 @@
 **Handoff:** HOF-XWEB-1.2-STOCKFISH240-v1.0  
 **Branch:** `feat/web-v14-stockfish240-homolog-20261102-r2`  
 **Base:** `feat/web-v1.4-adaptive`  
-**GitHub Actions:** [run 41378044851](https://github.com/danielbonavides/xadrez-treinador/actions/runs/41378044851)
+**GitHub Actions:** [run 41378568989](https://github.com/danielbonavides/xadrez-treinador/actions/runs/41378044851)
 
 ## Artefatos auditáveis
 
