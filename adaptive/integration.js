@@ -65,6 +65,7 @@ const stockfishEvidenceById=Object.create(null);
 let stockfishManualOverride=false;
 function renderStockfishEvidence(){
  const n=$('stockfishEvidence');if(!n)return;
+ n.style.whiteSpace='pre-line';
  const raw=current&&stockfishEvidenceById[current.id];
  const model=current?StockfishF5.normalize(raw,current,observationLegal):null;
  n.textContent=StockfishF5.render(model);
