@@ -7,7 +7,7 @@ function boot(raw='[]',fail=false,fetchMock=null){
  const storage={getItem:k=>items.has(k)?items.get(k):null,setItem(k,v){if(fail)throw Error('QuotaExceededError');writes.push(k);items.set(k,v);}};
  const document={body:{dataset:{}},getElementById:el,querySelectorAll:()=>[],addEventListener(){},createTextNode:text=>({textContent:text}),createElement:()=>({click(){}})};
  const context=vm.createContext({document,localStorage:storage,window:{localStorage:storage,addEventListener(){},fetch:fetchMock,crypto:require('node:crypto').webcrypto},console,URL,Blob,setTimeout});
- for(const file of ['stockfish-f5.js','core.js','revisions.js','legacy-revisions.js'])vm.runInContext(fs.readFileSync('adaptive/'+file,'utf8'),context);
+ for(const file of ['stockfish-f5.js','sequence-3.js','core.js','revisions.js','legacy-revisions.js'])vm.runInContext(fs.readFileSync('adaptive/'+file,'utf8'),context);
  vm.runInContext(html.match(/<script>const DATA=([\s\S]*?)<\/script>/)[0].slice(8,-9),context);
  const run=code=>vm.runInContext(code,context);
  return {el,run,writes,items,setFailure:value=>fail=value};
@@ -37,4 +37,42 @@ test('F5 fetch failure retains manual fallback and does not touch training',asyn
  assert.match(b.el('stockfishImportNotice').textContent,/Selecione o JSON manualmente/);
  assert.equal(b.run('attempts.length'),0);
  assert.equal(b.run('Object.keys(stockfishEvidenceById).length'),0);
+});
+
+test('sequence3: 3 player moves + 2 scripted replies, separate persistence, no G5 schedule',async()=>{
+ const dataset=JSON.parse(fs.readFileSync('teste-v1.4/stockfish-240-public.json','utf8'));
+ const b=boot('[]',false,async()=>({ok:true,json:async()=>dataset}));
+ await new Promise(resolve=>setImmediate(resolve));
+ b.el('exerciseLength').value='3';b.el('exerciseLength').handlers.change();
+ assert.equal(b.run('sequenceRun.status'),'playing');
+ assert.equal(b.run('sequenceRun.player_moves.length'),0);
+ const historyBefore=b.items.get('xadrez_v1_attempts_test_v1_4');
+ b.el('show').click();
+ assert.equal(b.run('sequenceRun.hints'),1);assert.equal(b.run('sequenceRun.player_moves.length'),0);
+ for(let i=1;i<=3;i++){
+  b.run('commitLegalMove(R88.legal(visibleState).find(m=>R88.uci(m)===Sequence3.hint(sequenceRun)))');
+  assert.equal(b.run('sequenceRun.player_moves.length'),i);
+  if(i<3)assert.equal(b.run('sequenceRun.opponent_moves.length'),i);
+ }
+ assert.equal(b.run('sequenceRun.status'),'complete');
+ assert.equal(b.run('sequenceRecorder.records.length'),1);
+ assert.equal(b.run('attempts.length'),0);
+ assert.equal(b.items.get('xadrez_v1_attempts_test_v1_4'),historyBefore);
+ assert.equal(b.items.get('xadrez_v1_attempts'),'PRODUCTION_SENTINEL');
+ const stored=JSON.parse(b.items.get('xadrez_v1_4_sequences_test_v1'))[0];
+ assert.equal(stored.sequence_status,'complete');
+ assert.equal(stored.hints_used,1);
+ assert.equal(stored.player_moves.length,3);
+ assert.equal(stored.opponent_moves.length,2);
+});
+test('sequence3 legal alternative ends as deviation without classifying error',async()=>{
+ const data=JSON.parse(fs.readFileSync('teste-v1.4/stockfish-240-public.json','utf8'));
+ const b=boot('[]',false,async()=>({ok:true,json:async()=>data}));
+ await new Promise(resolve=>setImmediate(resolve));
+ b.el('exerciseLength').value='3';b.el('exerciseLength').handlers.change();
+ b.run('commitLegalMove(R88.legal(visibleState).find(m=>R88.uci(m)!==Sequence3.hint(sequenceRun)))');
+ assert.equal(b.run('sequenceRun.status'),'deviation');
+ assert.equal(b.run('sequenceRecorder.records.length'),1);
+ assert.match(b.el('feedback').textContent,/NÃO é necessariamente um erro/);
+ assert.equal(b.run('attempts.length'),0);
 });
