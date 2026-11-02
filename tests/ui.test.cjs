@@ -104,6 +104,6 @@ test('toque no modo três lances identifica acerto sem alterar histórico G5',as
  b.el('audioToggle').click();
  b.run('commitLegalMove(R88.legal(visibleState).find(m=>R88.uci(m)===Sequence3.hint(sequenceRun)))');
  assert.equal(b.run('sequenceRun.player_moves.length'),1);
- assert.equal(b.run('__audioEvents[1]'),'correct');
+ assert.equal(b.run('__audioEvents[1]'),'check'); // o primeiro lance dessa variante dá xeque; prioridade sobre acerto.
  assert.equal(b.run('attempts.length'),0);
 });
