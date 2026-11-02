@@ -21,14 +21,16 @@ function normalize(raw,exercise,legal){
   if(line.pv_uci.length>1&&raw.quality?.legal_moves_verified!==true)return {status:'unavailable',reason:'unverified_pv'};
   const cp=line.score_cp_pov_player,mate=line.mate_in_pov_player;
   if(cp!=null&&(!Number.isFinite(cp)||mate!=null)||mate!=null&&(!Number.isInteger(mate)||cp!=null))return {status:'unavailable',reason:'invalid_score'};
-  lines.push({uci:line.root_uci,pv:line.pv_uci.slice(),cp:cp??null,mate:mate??null});
+  lines.push({kind:line.kind||'unlabeled',uci:line.root_uci,pv:line.pv_uci.slice(),cp:cp??null,mate:mate??null});
  }
  return {status:'research',schema_version:schema,exercise_id:raw.exercise_id,engine:verification.engine||'Stockfish',depth:Number.isInteger(verification.depth)?verification.depth:null,lines:Object.freeze(lines),diagnostic_certified:false};
 }
 function render(model){
  if(!model||model.status!=='research')return 'Evidências Stockfish indisponíveis ou não compatíveis para este exercício. Treinamento G5 permanece inalterado.';
- const fmt=l=>l.uci+' · '+(l.mate!==null?'MATE '+l.mate:l.cp!==null?(l.cp/100).toFixed(2)+' peões (POV jogador)':'avaliação não informada')+' · PV '+l.pv.join(' ');
- return 'Análise Stockfish experimental — NÃO certifica erro nem tática. '+model.engine+(model.depth===null?'':' · profundidade '+model.depth)+'. '+model.lines.map(fmt).join(' | ');
+ const labels={multipv_top_1:'Melhor linha Stockfish (MultiPV 1)',multipv_top_2:'Segunda linha Stockfish (MultiPV 2)',human_forced:'Continuação do lance histórico',g5_forced:'Continuação da sugestão G5'};
+ const notation=uci=>uci.slice(0,2)+'→'+uci.slice(2,4)+(uci.length>4?'='+uci[4].toUpperCase():'');
+ const fmt=l=>(labels[l.kind]||'Linha exploratória')+': '+notation(l.uci)+' · '+(l.mate!==null?'Mate em '+l.mate:l.cp!==null?(l.cp/100).toFixed(2)+' peões (perspectiva do jogador)':'avaliação não informada')+' · Variante '+l.pv.map(notation).join(' ');
+ return 'Análise Stockfish experimental — NÃO certifica erro nem tática. '+model.engine+(model.depth===null?'':' · profundidade '+model.depth)+'.\n'+model.lines.map(fmt).join('\n');
 }
 root.StockfishF5={normalize,render};
 if(typeof module!=='undefined'&&module.exports)module.exports=root.StockfishF5;
