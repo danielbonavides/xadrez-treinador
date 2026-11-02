@@ -53,3 +53,17 @@ test('UI malformed Stockfish JSON is rejected without affecting active G5 exerci
  assert.match(b.el('stockfishImportNotice').textContent,/Pacote não aplicado/);
  assert.equal(b.run('current.id'),current);assert.equal(b.run('attempts.length'),0);
 });
+
+test('UI Stockfish panel can be disabled mid-session without changing scheduler or history',async()=>{
+ const b=boot();b.run('startPuzzle()');
+ const raw=fs.readFileSync('stockfish-240/EXERCICIOS_PUBLICOS_240_RESEARCH.json','utf8');
+ const file={size:Buffer.byteLength(raw),text:async()=>raw};
+ b.el('stockfishBundle').files=[file];await b.el('stockfishBundle').handlers.change.call(b.el('stockfishBundle'));
+ const current=b.run('current.id'),schedule=JSON.stringify(b.run('projections'));
+ assert.equal(b.run('stockfishPedagogy.stats.valid'),240);
+ b.el('stockfishDisable').click();
+ assert.equal(b.run('stockfishPedagogy'),null);assert.equal(b.run('stockfishDisabled'),true);
+ assert.match(b.el('stockfishEvidence').textContent,/desligada nesta sessão/);
+ assert.equal(b.run('current.id'),current);assert.equal(JSON.stringify(b.run('projections')),schedule);
+ assert.equal(b.run('attempts.length'),0);assert.deepEqual(b.writes,[]);
+});
