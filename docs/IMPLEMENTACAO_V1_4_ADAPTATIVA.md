@@ -122,3 +122,14 @@ Foi criado `adaptive/stockfish-f5.js` e acrescentado o painel de leitura em `tes
 **Limite de integração:** o pacote real `XADREZ_HANDOFF_WEB12_STOCKFISH_240_20261101.zip` (SHA-256 declarado `be8c4c21250c0497e2fce69c0670e62e71f0f4ba743ad8b52d69b4057daf`) não está disponível para leitura/verificação nesta execução. Não houve processamento dos 240 registros reais nem certificação da legalidade integral das PVs. Para PVs de mais de um lance, o adaptador exige flag explícita `legal_moves_verified` do produtor; validação independente da linha inteira segue como pendência de pipeline offline. A versão real do schema `xadrez.pedagogia.v1.3` permanece sujeita a validação contra o pacote, que pode exigir ajustes no parser.
 
 **Publicação:** o arquivo de preview na branch foi alterado, mas a cópia hospedada anteriormente no Sites não foi redeployada por esta execução. `GO_ADAPTER_SCAFFOLD` / `NO_GO_REAL_DATA_ACTIVATION` / `NO_GO_MERGE_RELEASE`. Próximo passo obrigatório: recuperar ZIP, validar schema e PVs, executar testes Node e CI, reconstruir/republicar apenas preview isolada e homologar o novo painel; sem repetir os 8 testes já aprovados da v1.4 quando código dessas funções permanecer idêntico.
+
+
+## F5 — recuperação parcial de pacote e validação local (01/11/2026)
+
+Recuperados diretamente dos artefatos oficiais GitHub Actions os lotes EXP235 (run 41365886179, artifact 13106759083) e PILOT5 (run 41365566369, artifact 13106808459). São os **dois artefatos de origem**, não o ZIP consolidado do handoff (SHA declarado be8c4c...). CRC dos dois ZIPs passou.
+
+Foi gerado localmente um pacote público derivado com 240 documentos `public_candidate`, excluindo conteúdos de `private/`. Auditoria sintática: 240 IDs únicos EX0001–EX0240, 240 posições com FEN, 240×4 raízes de linhas (MultiPV1/2, human_forced, g5_forced), 240 schemas `xadrez.pedagogia.v1.3`, 68 primeiros lances MultiPV1 diferentes do G5, 0 conflitos nos checks sintáticos e whitelist negativa de campos privados. **Não houve rechecagem independente da legalidade completa das PVs** nesta execução (biblioteca python-chess indisponível no container); `quality.legal_moves_verified` provém do produtor.
+
+Novo painel com importação explícita do JSON público 240 via arquivo local: nenhum envio ao servidor nem alteração do histórico. Valida 240 IDs únicos e o contrato de cada exercício antes de habilitar o conjunto. Preview branch `teste-v1.4/index.html` atualizada e compilação sintática JS PASS. A hospedagem ChatGPT Sites previamente publicada **não foi atualizada automaticamente**; exige novo deploy da cópia isolada para disponibilizar o uploader remoto.
+
+Os testes focados do adaptador tiveram 7/7 PASS antes do uploader; suíte CI da alteração F5 deve ser verificada independentemente. Nenhum merge/release autorizado. `GO_PUBLIC_DATA_RECOVERED` / `GO_BRANCH_PREVIEW_CODE` / `NO_GO_HOSTED_PREVIEW_UPDATED` / `NO_GO_MERGE_RELEASE`.
