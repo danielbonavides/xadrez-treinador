@@ -71,7 +71,7 @@ test('V14-08 panel disable is ephemeral and has no scheduler dependency',()=>{
  const integration=fs.readFileSync('adaptive/integration.js','utf8');
  assert.ok(html.includes('id="stockfishDisable"'));
  assert.match(integration,/stockfishPedagogy=null;stockfishDisabled=true/);
- assert.doesNotMatch(integration.slice(integration.indexOf("stockfishDisable")),/localStorage|setItem\\s*\\(|AdaptiveScheduler|QueueBuilder/);
+ assert.doesNotMatch(integration.slice(integration.indexOf("stockfishDisable")),/localStorage|setItem\s*\(|AdaptiveScheduler|QueueBuilder/);
 });
 test('V14-07 v1.2 main baseline remains byte-identical and preview storage remains test-only',()=>{
  const b=Buffer.from(baseline.replace(/\r\n/g,'\n'));
