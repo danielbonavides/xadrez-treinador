@@ -45,14 +45,27 @@ function commitSequenceMove(move){
  if(!sequenceRun||sequenceRun.status!=='playing')return;
  const uci=R88.uci(move);
  const before=visibleState;
+ const expected=Sequence3.hint(sequenceRun);
  const wasCapture=before.b[move[1]]!=='.'||move[3]==='ep';
  const advanced=Sequence3.play(sequenceRun,uci,R88);
  if(advanced.status==='illegal')return;
+ // O som do jogador considera o tabuleiro após o SEU lance, não após a resposta automática.
+ const humanAfter=R88.apply(before,move);
  const lastReply=advanced.automatic_reply;
  sequenceRun=advanced;
  visibleState=advanced.board;
  lastMove=lastReply?{from:lastReply.slice(0,2),to:lastReply.slice(2,4)}:{from:uci.slice(0,2),to:uci.slice(2,4)};
- playMoveSound(R88.checked(visibleState)?'check':move[3]==='castle'?'castle':move[2]?'promotion':wasCapture?'capture':'move');
+ playMoveSound(BoardToc.classify({check:R88.checked(humanAfter),capture:wasCapture,correct:uci===expected,castle:move[3]==='castle',promotion:!!move[2]}));
+ if(lastReply&&audioEnabled){
+  // Resposta adversária recebe um toque neutro, ligeiramente depois do lance do jogador.
+  const reply=R88.legal(humanAfter).find(m=>R88.uci(m)===lastReply);
+  if(reply){
+   const replyAfter=R88.apply(humanAfter,reply);
+   const replyKind=BoardToc.classify({check:R88.checked(replyAfter),capture:humanAfter.b[reply[1]]!=='.'||reply[3]==='ep',castle:reply[3]==='castle',promotion:!!reply[2]});
+   const exerciseId=current.id;
+   setTimeout(()=>{if(audioEnabled&&current&&current.id===exerciseId)playMoveSound(replyKind);},135);
+  }
+ }
  sel=null;pendingPromotion=null;togglePromotionUi();
  if(advanced.status==='playing'){
   result=null;
