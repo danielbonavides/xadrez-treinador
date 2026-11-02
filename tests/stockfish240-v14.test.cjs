@@ -67,6 +67,12 @@ test('V14-06 existing F5 panel uses full PedagogyAdapter and keeps local file im
  assert.ok(!html.includes('stockfish-f5.js'));
  assert.ok(!html.includes('fetch('));
 });
+test('V14-08 panel disable is ephemeral and has no scheduler dependency',()=>{
+ const integration=fs.readFileSync('adaptive/integration.js','utf8');
+ assert.ok(html.includes('id="stockfishDisable"'));
+ assert.match(integration,/stockfishPedagogy=null;stockfishDisabled=true/);
+ assert.doesNotMatch(integration.slice(integration.indexOf("stockfishDisable")),/localStorage|setItem\\s*\\(|AdaptiveScheduler|QueueBuilder/);
+});
 test('V14-07 v1.2 main baseline remains byte-identical and preview storage remains test-only',()=>{
  const b=Buffer.from(baseline.replace(/\r\n/g,'\n'));
  assert.equal(crypto.createHash('sha1').update(Buffer.concat([Buffer.from('blob '+b.length+'\0'),b])).digest('hex'),'2b3990a71c0a42cd29b7adbed3a95f5bc9afef3b');
