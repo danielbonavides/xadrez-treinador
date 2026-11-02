@@ -133,3 +133,16 @@ Foi gerado localmente um pacote público derivado com 240 documentos `public_can
 Novo painel com importação explícita do JSON público 240 via arquivo local: nenhum envio ao servidor nem alteração do histórico. Valida 240 IDs únicos e o contrato de cada exercício antes de habilitar o conjunto. Preview branch `teste-v1.4/index.html` atualizada e compilação sintática JS PASS. A hospedagem ChatGPT Sites previamente publicada **não foi atualizada automaticamente**; exige novo deploy da cópia isolada para disponibilizar o uploader remoto.
 
 Os testes focados do adaptador tiveram 7/7 PASS antes do uploader; suíte CI da alteração F5 deve ser verificada independentemente. Nenhum merge/release autorizado. `GO_PUBLIC_DATA_RECOVERED` / `GO_BRANCH_PREVIEW_CODE` / `NO_GO_HOSTED_PREVIEW_UPDATED` / `NO_GO_MERGE_RELEASE`.
+
+
+## F5 — Carregamento automático público em subpasta GitHub Pages (02/11/2026)
+
+Após autorização expressa do titular para usar GitHub Pages apenas para a prévia, foi publicado **somente** o conjunto de arquivos da prévia e sua dependência pública em `main/teste-v1.4/` e `main/adaptive/`. A página raiz `main/index.html` (v1.2) conserva o blob auditado `2b3990a71c0a42cd29b7adbed3a95f5bc9afef3b`. O PR #3 continua aberto e em draft, não mergeado. A mudança em `main` é restrita ao caminho da prévia, não um release de v1.4.
+
+Fonte: arquivo público derivado dos artefatos oficiais de 5 + 235 exercícios; versão minimizada sob `teste-v1.4/stockfish-240-public.json` (251.474 bytes; excluídos `guidance`, `motifs`, `nodes`, quaisquer `private/*`, URLs e dados pessoais). Registros: 240 únicos, schema `xadrez.pedagogia.v1.3`, IDs/FEN/ply/G5 consistentes com o catálogo v1.2, flags de pesquisa, 960 PV completas e 8.360 lances reproduzidos legalmente com R88. A validação R88 é a engine JavaScript existente; não é uma nova certificação independente pela biblioteca python-chess ou nova execução Stockfish.
+
+Implementação: a prévia carrega automaticamente `./stockfish-240-public.json` com `window.fetch` do mesmo domínio e `credentials:'omit'`, sem salvar evidências no storage e sem interferir no `AttemptRecorder` ou `AdaptiveScheduler`. O carregador manual continua como fallback. Todo o pacote é validado antes de ativar as 240 entradas. O painel continua experimental, com a mensagem de que divergências não certificam erros.
+
+Testes de execução em ambiente JavaScript isolado com HTML e módulos reais: 240/240 carregados automaticamente, primeiro exercício renderizado com 4 linhas, nenhuma tentativa escrita e sentinela de produção preservada. O build reproduziu byte a byte `teste-v1.4/index.html`. Testes adicionados ao repositório para fluxo automático/404 e PVs 960/960. **A última CI da branch, após esses testes novos, ainda não foi confirmada nesta sessão**; os resultados antigos de CI não equivalem a uma execução da nova revisão. Leitura de conferência no GitHub confirmou `main` com arquivos de prévia idênticos aos da branch e produção v1.2 intacta. **GitHub Pages HTTP/Safari ao vivo não pôde ser alcançado por esta ferramenta**, exigindo confirmação humana de atualização e carregamento na URL.
+
+Estado: `GO_PRIVACIDADE_DADOS_PUBLICOS`, `GO_CODIGO_AUTOLOAD`, `GO_PREVIEW_MAIN_FILES`, `PENDENTE_CI_ULTIMO_COMMIT`, `PENDENTE_HTTP_SAFARI`, `NO_GO_MERGE_RELEASE`.
