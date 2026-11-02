@@ -133,3 +133,42 @@ Foi gerado localmente um pacote público derivado com 240 documentos `public_can
 Novo painel com importação explícita do JSON público 240 via arquivo local: nenhum envio ao servidor nem alteração do histórico. Valida 240 IDs únicos e o contrato de cada exercício antes de habilitar o conjunto. Preview branch `teste-v1.4/index.html` atualizada e compilação sintática JS PASS. A hospedagem ChatGPT Sites previamente publicada **não foi atualizada automaticamente**; exige novo deploy da cópia isolada para disponibilizar o uploader remoto.
 
 Os testes focados do adaptador tiveram 7/7 PASS antes do uploader; suíte CI da alteração F5 deve ser verificada independentemente. Nenhum merge/release autorizado. `GO_PUBLIC_DATA_RECOVERED` / `GO_BRANCH_PREVIEW_CODE` / `NO_GO_HOSTED_PREVIEW_UPDATED` / `NO_GO_MERGE_RELEASE`.
+
+
+## HOF-XWEB-1.2-STOCKFISH240-v1.0 — integração completa na v1.4 (02/11/2026)
+
+**Branch isolada:** `feat/web-v14-stockfish240-homolog-20261102-r2`, derivada da versão mais recente de `feat/web-v1.4-adaptive` (base commit `ee587871383cd9e3f306a9d4d5f002d0b833d3e9`). A implementação F5 parcial descrita acima foi preservada como histórico; a preview desta branch passa a utilizar o contrato completo `stockfish-240/adapter.js` através de `Adaptive.PedagogyAdapter`.
+
+### Integração
+
+- Reutilizado o painel F5 já existente, sem criar uma segunda interface Stockfish.
+- O carregamento permanece por arquivo local escolhido pelo usuário; não há fetch, envio do JSON ao servidor ou persistência das evidências.
+- `PedagogyAdapter(data, DATA.puzzles, R88)` valida o catálogo completo e entrega mapas normalizados por `exercise_id`.
+- O renderer consulta somente a evidência do exercício atual. Registro ausente ou divergente desabilita somente a visualização daquele exercício; os demais continuam disponíveis.
+- O adaptador não lê nem grava `localStorage`, tentativas, preferências, estágios ou intervalos. O agendador não recebe evidências Stockfish como entrada.
+- `adaptive/stockfish-f5.js` permanece apenas como helper legado coberto por regressão; não é carregado na preview integrada.
+
+### Evidência real e validação
+
+- Schema raiz: `xadrez.pedagogia.catalogo.experimental.v1.3`; schema dos itens: `xadrez.pedagogia.v1.3`.
+- Junção real: 240/240 IDs, FENs, ply e sugestões G5.
+- 960 PVs reproduzidas integralmente como lances legais com o motor R88 da própria Web.
+- python-chess: 240/240 FENs válidas e sugestões legais.
+- 68 divergências entre o primeiro lance Stockfish e G5 confirmadas; são diferenças de análise, não erros automáticos.
+- Perspectiva CP/MATE conferida pelos campos `score_cp_pov_player` e `mate_in_pov_player`; MATE permanece distinto de CP.
+- Whitelist de campos e verificações de privacidade aplicadas; nenhuma identificação privada é exibida.
+- O catálogo mantém `diagnostic_certified=false`; não há diagnóstico tático certificado.
+
+### Testes automatizados
+
+GitHub Actions run **41378044851**: sucesso.
+
+- Suíte Node adaptativa, UI e integração: **44/44 PASS**.
+- Testes sintéticos e de contrato do adaptador: **19/19 PASS**.
+- Testes de importação real na UI: pacote completo, JSON malformado e catálogo parcial; todos PASS.
+- Oráculo python-chess: **240/240 PASS**.
+- Build determinístico da preview e verificação de que `index.html` e `teste-v1.2/index.html` não mudaram: PASS.
+
+### Parecer
+
+**GO para homologação técnica da branch e revisão da preview. NO-GO para merge, deploy ou release.** Ainda falta homologação humana em Safari/iPhone real. A preview hospedada anteriormente não foi atualizada por esta execução; nenhuma publicação foi feita. A `main`, o histórico de produção, o JSON de treino G5 e as bases originais permanecem preservados.
