@@ -5,6 +5,13 @@
 **Base:** `feat/web-v1.4-adaptive`  
 **GitHub Actions:** [run 41378044851](https://github.com/danielbonavides/xadrez-treinador/actions/runs/41378044851)
 
+## Artefatos auditáveis
+
+- [Contrato normalizado](../stockfish-240/CONTRATO_NORMALIZADO.md)
+- [Tabela de junções 240/240](TABELA_JUNCOES_240.csv)
+- [Registro das 68 divergências](DIVERGENCIAS_G5_STOCKFISH_68.csv)
+- [Diff da branch contra a v1.4](https://github.com/danielbonavides/xadrez-treinador/compare/feat/web-v1.4-adaptive...feat/web-v14-stockfish240-homolog-20261102-r2)
+
 ## Resultados
 
 | Verificação | Resultado |
