@@ -1,4 +1,4 @@
-/* F5 — Adaptador opcional experimental. Sem efeito sobre treino ou pontuação. */
+/* F5 legado — adaptador single-item mantido para regressão. A preview integrada usa stockfish-240/adapter.js via Adaptive.PedagogyAdapter. */
 (function(root){
 'use strict';
 const UCI=/^[a-h][1-8][a-h][1-8][qrbn]?$/;
