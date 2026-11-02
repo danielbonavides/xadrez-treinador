@@ -49,3 +49,7 @@ $('importProgress').addEventListener('change',async function(){
 $('refreshQueue').addEventListener('click',resetQueue);
 window.addEventListener('storage',e=>{if(e.key===ATTEMPTS_KEY){recorder.reload();attempts=recorder.records;queueReady=false;renderAdaptive();}});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){queueReady=false;renderAdaptive();}});
+
+// F5 experimental: não acoplar ao scheduler nem ao recorder. Sem JSON aprovado, falha fechada.
+const stockfishEvidenceById=Object.create(null);
+function renderStockfishEvidence(){const n=$('stockfishEvidence');if(!n)return;const raw=current&&stockfishEvidenceById[current.id];const model=current?StockfishF5.normalize(raw,current,observationLegal):null;n.textContent=StockfishF5.render(model);}
