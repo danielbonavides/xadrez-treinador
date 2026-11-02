@@ -7,9 +7,15 @@ fs.writeFileSync('adaptive/revisions.js','const CATALOG_REVISIONS='+JSON.stringi
 // O mapa de ligação legado fica fixado na base auditada, não em futuros catálogos.
 if(!fs.existsSync('adaptive/legacy-revisions.js'))fs.writeFileSync('adaptive/legacy-revisions.js','const LEGACY_REVISIONS='+JSON.stringify(revisions,null,2)+';\n');
 let html=baseline.replace(/v1\.2\.0/gi,'v1.4 · preview').replace('V1.2.0','V1.4 · PREVIEW');
-html=html.replace('<script>const DATA=', '<script src="../adaptive/stockfish-f5.js"></script><script src="../adaptive/sequence-3.js"></script><script src="../adaptive/core.js"></script><script src="../adaptive/revisions.js"></script><script src="../adaptive/legacy-revisions.js"></script>\n<script>const DATA=');
+html=html.replace('<script>const DATA=', '<script src="../adaptive/stockfish-f5.js"></script><script src="../adaptive/sequence-3.js"></script><script src="../adaptive/board-toc.js?v=1"></script><script src="../adaptive/core.js"></script><script src="../adaptive/revisions.js"></script><script src="../adaptive/legacy-revisions.js"></script>\n<script>const DATA=');
 html=html.replace("const THEME_KEY='xadrez_web_theme_v1'","const THEME_KEY='xadrez_web_test_v1_4_theme'").replace("const AUDIO_KEY='xadrez_web_sound_enabled_v1'","const AUDIO_KEY='xadrez_web_test_v1_4_sound'");
 html=html.replace('<section id="trainer" class="tab">','<section id="trainer" class="tab">'+fs.readFileSync('adaptive/controls.html','utf8'));
+// Preview-only: substitui notas eletrônicas por um "toc" seco e breve de peça no tabuleiro.
+const soundStart=html.indexOf('function playMoveSound(kind){');
+const soundEnd=html.indexOf("$('audioToggle').addEventListener",soundStart);
+if(soundStart<0||soundEnd<0)throw Error('Pontos de áudio não encontrados');
+html=html.slice(0,soundStart)+"function playMoveSound(kind){\n if(!audioEnabled)return;\n const ctx=ensureAudio();if(!ctx||ctx.state==='closed')return;\n try{BoardToc.play(ctx,kind);}catch(e){} // som nunca bloqueia jogada.\n}\n"+html.slice(soundEnd);
+html=html.replace('Áudio local opcional','Toc discreto: movimento, acerto, captura e xeque');
 const start=html.indexOf('let lastMove=null;'),end=html.indexOf('function gameFilter(p)');
 html=html.slice(0,start)+fs.readFileSync('adaptive/integration.js','utf8')+'\n'+html.slice(end);
 const qStart=html.indexOf('function resetQueue()'),qEnd=html.indexOf('// Render a partir');
@@ -23,6 +29,15 @@ html=html.replace(/ \$\('show'\).disabled=true;\r?\n drawBoard\(\);/, " $('show'
 html=html.replace('function commitLegalMove(move){',"function commitLegalMove(move){\n if(sequenceMode==='3')return commitSequenceMove(move);");
 html=html.replace('visibleState=current?R88.parse(current.fen):null;lastMove=null;', "visibleState=current?R88.parse(current.fen):null;lastMove=null;\n if(sequenceMode==='3'&&current){const plan=sequencePlan(current);sequenceRun=plan.status==='ready'?Sequence3.begin(current,plan,R88):null;}renderSequenceStatus();");
 html=html.replace("$('show').addEventListener('click',()=>{\n if(!current||result)return;", "$('show').addEventListener('click',()=>{\n if(!current||result)return;\n if(sequenceMode==='3'){if(!sequenceRun||sequenceRun.status!=='playing')return;sequenceRun.hints++;$('feedback').className='feedback';$('feedback').textContent='Dica da variante (não registra tentativa): '+Sequence3.hint(sequenceRun)+'. Escolha seu lance para continuar.';return;}");
+// Um lance correto recebe toque suave próprio; captura e xeque têm prioridade sonora.
+const commitStart=html.indexOf('function commitLegalMove(move){');
+const commitEnd=html.indexOf('function playSquare(sq){',commitStart);
+if(commitStart<0||commitEnd<0)throw Error('Pontos do commit não encontrados');
+const oldSound="playMoveSound(R88.checked(visibleState)?'check':move[3]==='castle'?'castle':move[2]?'promotion':wasCapture?'capture':'move');";
+const correctSound="playMoveSound(BoardToc.classify({check:R88.checked(visibleState),capture:wasCapture,correct,castle:move[3]==='castle',promotion:!!move[2]}));";
+const originalCommit=html.slice(commitStart,commitEnd);
+if(!originalCommit.includes(oldSound))throw Error('Áudio original do commit não encontrado');
+html=html.slice(0,commitStart)+originalCommit.replace(oldSound,correctSound)+html.slice(commitEnd);
 const ex=html.indexOf("$('export').addEventListener");
 html=html.slice(0,ex)+`$('export').addEventListener('click',()=>downloadBackup(recorder.backup(prefs)));
 renderAdaptive();
