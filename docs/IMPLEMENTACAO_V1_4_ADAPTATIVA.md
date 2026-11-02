@@ -163,9 +163,9 @@ Os testes focados do adaptador tiveram 7/7 PASS antes do uploader; suíte CI da 
 
 GitHub Actions run **41378568989**: sucesso.
 
-- Suíte Node adaptativa, UI e integração: **44/44 PASS**.
+- Suíte Node adaptativa, UI e integração: **46/46 PASS**.
 - Testes sintéticos e de contrato do adaptador: **19/19 PASS**.
-- Testes de importação real na UI: pacote completo, JSON malformado e catálogo parcial; todos PASS.
+- Testes de importação real na UI: pacote completo, JSON malformado, catálogo parcial e painel desligado durante a sessão; todos PASS.
 - Oráculo python-chess: **240/240 PASS**.
 - Build determinístico da preview e verificação de que `index.html` e `teste-v1.2/index.html` não mudaram: PASS.
 
