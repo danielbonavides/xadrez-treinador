@@ -94,7 +94,16 @@ class AttemptRecorder{
  retry(){return this.save(this.pending);}
  backup(prefs){return {versao:'XADREZ-V1',data_exportacao:new Date().toISOString(),puzzles_tentados:this.records.concat(this.pending),adaptive:{schema_version:'xadrez.backup.v1.4',policy_version:POLICY,preferences:preferences(prefs)},unsaved_events:this.pending.length,unreadable_history_raw:this.error?this.raw:null};}
 }
-function PedagogyAdapter(data){return {available:false,label:'Análise Stockfish (experimental)',explanation:null,status:data?'pending_contract_validation':'not_loaded'};}
+function PedagogyAdapter(data,puzzles,rules){
+ const base={available:false,label:'Análise Stockfish (experimental)',explanation:null,status:data?'pending_contract_validation':'not_loaded'};
+ if(!data||!Array.isArray(puzzles)||!rules||!root.XadrezEvidence||typeof root.XadrezEvidence.normalizeCatalog!=='function')return base;
+ try{
+  const normalized=root.XadrezEvidence.normalizeCatalog(data,puzzles,rules);
+  if(!normalized||!normalized.stats||normalized.stats.globalError)return {...base,status:'invalid_catalog',stats:normalized&&normalized.stats||null};
+  return {available:true,label:base.label,explanation:null,status:normalized.stats.unavailable?'partial':'ready',
+    byId:normalized.byId,errors:normalized.errors,stats:normalized.stats};
+ }catch(e){return {...base,status:'invalid_catalog',error:String(e&&e.message||e).slice(0,90)};}
+}
 const api={POLICY,preferences,ExerciseCatalog,LegacyAttemptAdapter,AdaptiveScheduler,QueueBuilder,AttemptRecorder,mergeHistories,PedagogyAdapter};
 if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.Adaptive=api;
 })(typeof globalThis!=='undefined'?globalThis:this);
