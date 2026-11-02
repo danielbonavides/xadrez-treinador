@@ -14,14 +14,14 @@ test('som correto, captura e xeque são categorias distintas e têm prioridade e
 function audioMock(){
  const data={sources:0,oscillators:0,buffers:0,starts:[],gains:[],cutoffs:[]};
  const node=()=>({connect(){}});
- const param=()=>({setValueAtTime(v,t){data.gains.push([v,t]);},linearRampToValueAtTime(v,t){data.gains.push([v,t]);},exponentialRampToValueAtTime(v,t){data.gains.push([v,t]);}});
+ const param=(kind='gain')=>({setValueAtTime(v,t){if(kind==='gain')data.gains.push([v,t]);},linearRampToValueAtTime(v,t){if(kind==='gain')data.gains.push([v,t]);},exponentialRampToValueAtTime(v,t){if(kind==='gain')data.gains.push([v,t]);}});
  const ctx={
   state:'running',currentTime:1,sampleRate:44100,destination:node(),
   createBuffer(n,count,rate){data.buffers++;assert.equal(n,1);assert.equal(rate,44100);return {getChannelData:()=>new Float32Array(count)};},
   createBufferSource(){data.sources++;return {...node(),start(t){data.starts.push(t)},stop(){},set buffer(b){assert(b)}};},
-  createBiquadFilter(){return {...node(),frequency:param(),type:''};},
+  createBiquadFilter(){return {...node(),frequency:param('frequency'),type:''};},
   createGain(){return {...node(),gain:param()};},
-  createOscillator(){data.oscillators++;return {...node(),frequency:param(),type:'',start(t){data.starts.push(t)},stop(){}};}
+  createOscillator(){data.oscillators++;return {...node(),frequency:param('frequency'),type:'',start(t){data.starts.push(t)},stop(){}};}
  };
  return {ctx,data};
 }
