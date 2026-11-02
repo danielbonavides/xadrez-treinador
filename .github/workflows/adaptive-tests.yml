@@ -19,6 +19,6 @@ jobs:
           python-version: '3.12'
       - run: node tools/build-adaptive.cjs
       - run: git diff --exit-code -- teste-v1.4 adaptive/revisions.js adaptive/legacy-revisions.js
-      - run: node --test tests/adaptive.test.cjs tests/ui.test.cjs tests/stockfish-f5.test.cjs
+      - run: node --test tests/adaptive.test.cjs tests/ui.test.cjs tests/stockfish-f5.test.cjs tests/sequence3.test.cjs
       - run: python -m pip install python-chess==1.999
       - run: python tests/catalog_oracle.py
