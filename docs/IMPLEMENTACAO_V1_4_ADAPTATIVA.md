@@ -89,3 +89,25 @@ Evidência visual móvel: [preview-v14-mobile.png](preview-v14-mobile.png).
 Produção não recebeu alteração, portanto rollback imediato consiste em voltar à URL v1.2. Baseline recuperável pelo commit acima; não executar reset/force-push em main. Descartar ou suspender a preview pode ser feito posteriormente sem apagar histórico de produção. Manter backups exportados de testes se forem úteis à homologação.
 
 **GO_PREVIEW / GO_DRAFT_REVIEW / NO_GO_MERGE_RELEASE.** F1–F3 implementadas e verificadas; F4 entrega preview, regressões e roteiro, com aceite humano real ainda pendente. Nenhuma fonte PGN/G4/G5, TESTE3, HOLD/holdout ou main foi alterada. A seleção adaptativa continua exploratória e não mede Accuracy oficial nem força enxadrística.
+
+
+## Homologação humana Safari/iPhone — aceite recebido em 01/11/2026
+
+O titular executou o roteiro na prévia isolada e reportou **8/8 PASS**, sem falhas ou observações pendentes:
+
+| Caso | Resultado informado |
+| --- | --- |
+| Página abre, banner de testes e sem importação automática de histórico | PASS |
+| Modos Novos, Revisões e Misto | PASS |
+| Filtros e cadência alteram a fila | PASS |
+| Coincidência G5 programa revisão; alternativa legal não é erro certificado | PASS |
+| Mostrar sugestão não registra tentativa | PASS |
+| Toques, orientação Pretas, seta, tema e som | PASS |
+| Backup exporta, importa e reimporta sem duplicação | PASS |
+| v1.2 preserva histórico e preferências originais | PASS |
+
+**Parecer atualizado:** `GO_HUMAN_HOMOLOGATION` para os cenários efetivamente executados na prévia Safari/iPhone; somado a `GO_PREVIEW` e `GO_DRAFT_REVIEW`. **Continua `NO_GO_MERGE_RELEASE`** por instrução expressa do titular: não realizar merge, alterar `main` ou publicar definitivamente sem autorização explícita de release.
+
+Nenhuma correção foi identificada a partir dos resultados humanos reportados. Os testes automatizados (27/27), oráculo python-chess (240/240), CI e testes Chrome permanecem como evidências anteriores, sem serem reexecutados nesta homologação. A confirmação de que a v1.2 preservou histórico e preferências é resultado do teste humano reportado, não uma nova leitura do dispositivo.
+
+**Próximo estado permitido:** PR #3 permanece aberto em rascunho, branch `feat/web-v1.4-adaptive` isolada. A homologação está concluída para a candidata; merge e release aguardam autorização expressa.
