@@ -35,10 +35,14 @@
     put('small','Avaliação na perspectiva de quem joga. Buscas independentes não equivalem a perda de centipões certificada. Sem diagnóstico tático certificado.',details);
   }
   function getJson() {
-    const embedded=document.getElementById('sfPublicJSON');
-    if (embedded && embedded.textContent.trim()) return Promise.resolve(JSON.parse(embedded.textContent));
-    return fetch('./stockfish-240/EXERCICIOS_PUBLICOS_240_RESEARCH.json', {cache:'no-store',credentials:'omit'})
-      .then(response=>{if(!response.ok)throw Error('HTTP_'+response.status);return response.json();});
+    // Promise boundary catches malformed inline JSON, unsupported file:// fetch,
+    // network errors and HTTP responses without affecting the G5 trainer.
+    return Promise.resolve().then(() => {
+      const embedded=document.getElementById('sfPublicJSON');
+      if (embedded && embedded.textContent.trim()) return JSON.parse(embedded.textContent);
+      return fetch('./stockfish-240/EXERCICIOS_PUBLICOS_240_RESEARCH.json', {cache:'no-store',credentials:'omit'})
+        .then(response=>{if(!response.ok)throw Error('HTTP_'+response.status);return response.json();});
+    });
   }
   async function activate() {
     const request=++nonce;
