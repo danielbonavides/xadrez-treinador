@@ -9,7 +9,7 @@ permissions:
 jobs:
   homologation:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -30,10 +30,26 @@ jobs:
           node --check stockfish-240/adapter.js
           node --check adaptive/integration.js
           node --check tests/stockfish240-v14.test.cjs
+          node --check tests/browser-stockfish240-v14.cjs
       - name: Run adaptive, UI and Stockfish 240 contracts
         run: node --test tests/adaptive.test.cjs tests/ui.test.cjs tests/stockfish-f5.test.cjs tests/stockfish240-v14.test.cjs
       - name: Run independent evidence adapter synthetic and catalog tests
         run: node stockfish-240/test_adapter.js
+      - name: Install Playwright Chromium
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Serve isolated preview
+        run: |
+          python -m http.server 8765 --bind 127.0.0.1 >/tmp/xadrez-preview.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8765/teste-v1.4/index.html >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/xadrez-preview.log
+          exit 1
+      - name: Run real Chromium browser smoke test
+        run: node tests/browser-stockfish240-v14.cjs
       - name: Validate all public puzzles with python-chess
         run: |
           python -m pip install python-chess==1.999
