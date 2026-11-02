@@ -22,7 +22,7 @@ test('F5 public 240 dataset is privacy-allowlisted, catalog-matched, and all PVs
  assert.equal(bundle.record_count,240);assert.equal(bundle.research_only,true);
  assert.equal(bundle.records.length,240);assert.equal(new Set(bundle.records.map(x=>x.exercise_id)).size,240);
  assert(!/[\\w.+-]+@[\\w.-]+\\.[a-z]{2,}/i.test(raw));
- assert(!/https?:\\/\\//i.test(raw));
+ assert(!raw.includes('http://')&&!raw.includes('https://'));
  let pv=0,plies=0;
  for(const record of bundle.records){
   assert.deepEqual(Object.keys(record).sort(),['candidate','exercise_id','lines','position','quality','schema_version','verification']);
