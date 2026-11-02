@@ -10,6 +10,10 @@ let html=baseline.replace(/v1\.2\.0/gi,'v1.4 · preview').replace('V1.2.0','V1.4
 html=html.replace('<script>const DATA=', '<script src="../adaptive/core.js"></script><script src="../adaptive/revisions.js"></script><script src="../adaptive/legacy-revisions.js"></script>\n<script>const DATA=');
 html=html.replace("const THEME_KEY='xadrez_web_theme_v1'","const THEME_KEY='xadrez_web_test_v1_4_theme'").replace("const AUDIO_KEY='xadrez_web_sound_enabled_v1'","const AUDIO_KEY='xadrez_web_test_v1_4_sound'");
 html=html.replace('<section id="trainer" class="tab">','<section id="trainer" class="tab">'+fs.readFileSync('adaptive/controls.html','utf8'));
+const feedbackAnchor='<div id="feedback" class="feedback" aria-live="polite">Escolha uma peça para começar.</div>';
+if(html.split(feedbackAnchor).length!==2)throw Error('Feedback anchor must occur exactly once');
+const researchPanel='<details id="sfResearch" class="panel" data-json-url="../stockfish-240/EXERCICIOS_PUBLICOS_240_RESEARCH.json" style="margin:12px 0;padding:12px"><summary><b>Análise Stockfish (experimental)</b> <span class="muted small">· opcional</span></summary><p class="muted small">Reanálise de pesquisa em profundidade 10. Não substitui a sugestão G5, a pontuação nem o histórico adaptativo.</p><button type="button" id="sfToggle" class="action" aria-pressed="false">Ligar análise Stockfish</button><p class="muted small" id="sfStatus" role="status" aria-live="polite">Desligado nesta sessão.</p><div class="small" id="sfDetails" aria-live="polite"></div></details>';
+html=html.replace(feedbackAnchor,feedbackAnchor+researchPanel);
 const start=html.indexOf('let lastMove=null;'),end=html.indexOf('function gameFilter(p)');
 html=html.slice(0,start)+fs.readFileSync('adaptive/integration.js','utf8')+'\n'+html.slice(end);
 const qStart=html.indexOf('function resetQueue()'),qEnd=html.indexOf('// Render a partir');
@@ -22,7 +26,7 @@ html=html.replace(/ \$\('show'\).disabled=true;\r?\n drawBoard\(\);/, " $('show'
 const ex=html.indexOf("$('export').addEventListener");
 html=html.slice(0,ex)+`$('export').addEventListener('click',()=>downloadBackup(recorder.backup(prefs)));
 renderAdaptive();
-</script></body></html>\n`;
+</script><script src="../stockfish-240/adapter.js"></script><script src="../stockfish-240/panel.js"></script></body></html>\n`;
 html=html.replace('Qual lance a engine sugeriu?','Qual lance o G5 sugeriu?');
 html=html.replace('Posição ${counter} de ${queue.length}. Tentativas registradas: ${attempts.length}.','Posição ${counter}. Tentativas persistidas: ${attempts.length}.');
 fs.mkdirSync('teste-v1.4',{recursive:true});fs.writeFileSync('teste-v1.4/index.html',html);
