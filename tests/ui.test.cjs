@@ -1,13 +1,13 @@
 // Integração dos scripts reais da preview em DOM mínimo, sem dependências externas.
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const html=fs.readFileSync('teste-v1.4/index.html','utf8');
-function boot(raw='[]',fail=false,fetchMock=null){
+function boot(raw='[]',fail=false,fetchMock=null,audioCtor=null){
  const writes=[],items=new Map([['xadrez_v1_attempts','PRODUCTION_SENTINEL'],['xadrez_v1_attempts_test_v1_4',raw]]),elements=new Map();
  function el(id){if(!elements.has(id)){const classes=new Set(id==='trainer'?['active']:[]);elements.set(id,{id,value:'ALL',textContent:'',innerHTML:'',style:{},dataset:{},disabled:false,handlers:{},classList:{contains:c=>classes.has(c),toggle(c,v){v===undefined?v=!classes.has(c):v;v?classes.add(c):classes.delete(c);}},addEventListener(type,fn){this.handlers[type]=fn;},setAttribute(){},querySelectorAll(){return[];},append(node){this.textContent+=node.textContent;},click(){return this.handlers.click&&this.handlers.click({target:this});}});}return elements.get(id);}
  const storage={getItem:k=>items.has(k)?items.get(k):null,setItem(k,v){if(fail)throw Error('QuotaExceededError');writes.push(k);items.set(k,v);}};
  const document={body:{dataset:{}},getElementById:el,querySelectorAll:()=>[],addEventListener(){},createTextNode:text=>({textContent:text}),createElement:()=>({click(){}})};
- const context=vm.createContext({document,localStorage:storage,window:{localStorage:storage,addEventListener(){},fetch:fetchMock,crypto:require('node:crypto').webcrypto},console,URL,Blob,setTimeout});
- for(const file of ['stockfish-f5.js','sequence-3.js','core.js','revisions.js','legacy-revisions.js'])vm.runInContext(fs.readFileSync('adaptive/'+file,'utf8'),context);
+ const context=vm.createContext({document,localStorage:storage,window:{localStorage:storage,addEventListener(){},fetch:fetchMock,AudioContext:audioCtor,crypto:require('node:crypto').webcrypto},console,URL,Blob,setTimeout});
+ for(const file of ['stockfish-f5.js','sequence-3.js','board-toc.js','core.js','revisions.js','legacy-revisions.js'])vm.runInContext(fs.readFileSync('adaptive/'+file,'utf8'),context);
  vm.runInContext(html.match(/<script>const DATA=([\s\S]*?)<\/script>/)[0].slice(8,-9),context);
  const run=code=>vm.runInContext(code,context);
  return {el,run,writes,items,setFailure:value=>fail=value};
@@ -74,5 +74,36 @@ test('sequence3 legal alternative ends as deviation without classifying error',a
  assert.equal(b.run('sequenceRun.status'),'deviation');
  assert.equal(b.run('sequenceRecorder.records.length'),1);
  assert.match(b.el('feedback').textContent,/NÃO é necessariamente um erro/);
+ assert.equal(b.run('attempts.length'),0);
+});
+
+test('toque da jogada certa é diferente de movimento comum e controle liga/desliga',()=>{
+ const fakeAudio=function(){this.state='running';this.currentTime=0};
+ const b=boot('[]',false,null,fakeAudio);
+ b.run('globalThis.__audioEvents=[];BoardToc.play=(_,kind)=>{__audioEvents.push(kind);return true;}');
+ assert.equal(b.run('audioEnabled'),false);
+ b.el('audioToggle').click();
+ assert.equal(b.run('audioEnabled'),true);
+ assert.equal(b.run('__audioEvents[0]'),'move');
+ b.run('startPuzzle();commitLegalMove(R88.legal(visibleState).find(m=>R88.uci(m)===current.melhor_uci))');
+ assert.equal(b.run('__audioEvents[1]'),'correct');
+ assert.equal(b.run('attempts.length'),1);
+ b.el('audioToggle').click();
+ assert.equal(b.run('audioEnabled'),false);
+ assert.equal(b.run('__audioEvents.length'),2);
+ assert.equal(b.items.get('xadrez_v1_attempts'),'PRODUCTION_SENTINEL');
+ assert(b.writes.every(k=>k.includes('_test_')));
+});
+test('toque no modo três lances identifica acerto sem alterar histórico G5',async()=>{
+ const dataset=JSON.parse(fs.readFileSync('teste-v1.4/stockfish-240-public.json','utf8'));
+ const fakeAudio=function(){this.state='running';this.currentTime=0};
+ const b=boot('[]',false,async()=>({ok:true,json:async()=>dataset}),fakeAudio);
+ b.run('globalThis.__audioEvents=[];BoardToc.play=(_,kind)=>{__audioEvents.push(kind);return true;}');
+ await new Promise(resolve=>setImmediate(resolve));
+ b.el('exerciseLength').value='3';b.el('exerciseLength').handlers.change();
+ b.el('audioToggle').click();
+ b.run('commitLegalMove(R88.legal(visibleState).find(m=>R88.uci(m)===Sequence3.hint(sequenceRun)))');
+ assert.equal(b.run('sequenceRun.player_moves.length'),1);
+ assert.equal(b.run('__audioEvents[1]'),'correct');
  assert.equal(b.run('attempts.length'),0);
 });
