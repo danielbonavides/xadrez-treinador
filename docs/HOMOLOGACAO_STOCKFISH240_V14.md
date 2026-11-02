@@ -21,11 +21,11 @@
 | Variantes PV reproduzidas com R88 | 960/960 PASS |
 | python-chess: FEN e sugestão legal | 240/240 PASS |
 | Divergências G5 × Stockfish | 68 — confirmadas, não classificadas como erros |
-| Contratos Node adaptativos + UI + integração | 44/44 PASS |
+| Contratos Node adaptativos + UI + integração | 46/46 PASS |
 | Testes sintéticos/contrato do adaptador | 19/19 PASS |
-| JSON ausente/malformado | PASS — treinamento preservado |
+| JSON ausente/malformado | PASS — treinamento preservado; HTTP N/A porque não há dependência de rede |
 | Registro ausente/duplicado/FEN/ply/G5 divergentes | PASS — isolamento por exercício |
-| Importação local e persistência | PASS — sem escrita pelo adaptador |
+| Importação local, desligamento/religamento em sessão e persistência | PASS — sem escrita pelo adaptador |
 | Scheduler, estágios, intervalos e fila | PASS — invariantes nos testes |
 | Preview determinística e baseline v1.2 | PASS |
 
