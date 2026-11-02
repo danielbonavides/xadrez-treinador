@@ -1,12 +1,12 @@
 // Integração dos scripts reais da preview em DOM mínimo, sem dependências externas.
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const html=fs.readFileSync('teste-v1.4/index.html','utf8');
-function boot(raw='[]',fail=false){
+function boot(raw='[]',fail=false,fetchMock=null){
  const writes=[],items=new Map([['xadrez_v1_attempts','PRODUCTION_SENTINEL'],['xadrez_v1_attempts_test_v1_4',raw]]),elements=new Map();
  function el(id){if(!elements.has(id)){const classes=new Set(id==='trainer'?['active']:[]);elements.set(id,{id,value:'ALL',textContent:'',innerHTML:'',style:{},dataset:{},disabled:false,handlers:{},classList:{contains:c=>classes.has(c),toggle(c,v){v===undefined?v=!classes.has(c):v;v?classes.add(c):classes.delete(c);}},addEventListener(type,fn){this.handlers[type]=fn;},setAttribute(){},querySelectorAll(){return[];},append(node){this.textContent+=node.textContent;},click(){return this.handlers.click&&this.handlers.click({target:this});}});}return elements.get(id);}
  const storage={getItem:k=>items.has(k)?items.get(k):null,setItem(k,v){if(fail)throw Error('QuotaExceededError');writes.push(k);items.set(k,v);}};
  const document={body:{dataset:{}},getElementById:el,querySelectorAll:()=>[],addEventListener(){},createTextNode:text=>({textContent:text}),createElement:()=>({click(){}})};
- const context=vm.createContext({document,localStorage:storage,window:{localStorage:storage,addEventListener(){},crypto:require('node:crypto').webcrypto},console,URL,Blob,setTimeout});
+ const context=vm.createContext({document,localStorage:storage,window:{localStorage:storage,addEventListener(){},fetch:fetchMock,crypto:require('node:crypto').webcrypto},console,URL,Blob,setTimeout});
  for(const file of ['stockfish-f5.js','core.js','revisions.js','legacy-revisions.js'])vm.runInContext(fs.readFileSync('adaptive/'+file,'utf8'),context);
  vm.runInContext(html.match(/<script>const DATA=([\s\S]*?)<\/script>/)[0].slice(8,-9),context);
  const run=code=>vm.runInContext(code,context);
@@ -17,3 +17,24 @@ test('UI legal commit persists compatible event and updates scheduling; refresh 
 test('UI quota shows unsaved warning and retains downloadable fallback',()=>{const b=boot('[]',true);b.run('startPuzzle();commitLegalMove(R88.legal(visibleState)[0])');assert.equal(b.run('attempts.length'),0);assert.equal(b.run('recorder.pending.length'),1);assert.match(b.el('storageStatus').textContent,/NÃO SALVA/);assert.match(b.el('feedback').textContent,/NÃO SALVA/);assert.equal(b.run('recorder.backup(prefs).puzzles_tentados.length'),1);b.setFailure(false);b.el('retrySave').click();assert.equal(b.run('attempts.length'),1);assert.equal(b.run('recorder.pending.length'),0);});
 test('UI illegal move, empty queue and mode changes do not record',()=>{const b=boot();b.run("startPuzzle();playSquare('e2');playSquare('e7')");assert.equal(b.run('attempts.length'),0);b.el('trainingMode').value='revisao';b.el('trainingMode').handlers.change();assert.match(b.el('feedback').textContent,/Fila concluída/);assert.equal(b.run('current'),null);assert.equal(b.el('show').disabled,true);assert.equal(b.run('attempts.length'),0);});
 test('UI import replay is idempotent, preferences stay current',async()=>{const b=boot(),a=b.run("({id:current?.id||'EX0001',ply:11,uci_tentado:'e2e4',uci_sugerido_g5:'e2e4',acertou:true})");const file={size:100,text:async()=>JSON.stringify({puzzles_tentados:[a,a],adaptive:{preferences:{default_mode:'revisao'}}})};for(let i=0;i<2;i++){b.el('importProgress').files=[file];await b.el('importProgress').handlers.change.call(b.el('importProgress'));}assert.equal(b.run('attempts.length'),2);assert.equal(b.run('prefs.default_mode'),'misto');assert.equal(b.run('projections[0].due_at_utc'),null);});
+
+test('F5 automatically loads 240 public records without history writes',async()=>{
+ const json=JSON.parse(fs.readFileSync('teste-v1.4/stockfish-240-public.json','utf8'));let hits=0;
+ const b=boot('[]',false,async(url,opts)=>{hits++;assert.equal(url,'./stockfish-240-public.json');assert.equal(opts.credentials,'omit');return {ok:true,status:200,json:async()=>json};});
+ b.run('startPuzzle()');
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.equal(hits,1);
+ assert.equal(b.run('Object.keys(stockfishEvidenceById).length'),240);
+ assert.match(b.el('stockfishImportNotice').textContent,/240 análises Stockfish carregadas automaticamente/);
+ assert.match(b.el('stockfishEvidence').textContent,/NÃO certifica erro/);
+ assert.equal(b.items.get('xadrez_v1_attempts'),'PRODUCTION_SENTINEL');
+ assert.equal(b.run('attempts.length'),0);
+});
+test('F5 fetch failure retains manual fallback and does not touch training',async()=>{
+ const b=boot('[]',false,async()=>({ok:false,status:404}));
+ b.run('startPuzzle()');
+ await new Promise(resolve=>setImmediate(resolve));
+ assert.match(b.el('stockfishImportNotice').textContent,/Selecione o JSON manualmente/);
+ assert.equal(b.run('attempts.length'),0);
+ assert.equal(b.run('Object.keys(stockfishEvidenceById).length'),0);
+});
