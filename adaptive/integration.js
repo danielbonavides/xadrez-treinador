@@ -50,32 +50,61 @@ $('refreshQueue').addEventListener('click',resetQueue);
 window.addEventListener('storage',e=>{if(e.key===ATTEMPTS_KEY){recorder.reload();attempts=recorder.records;queueReady=false;renderAdaptive();}});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){queueReady=false;renderAdaptive();}});
 
-// F5 experimental: não acoplar ao scheduler nem ao recorder. Sem JSON aprovado, falha fechada.
+// F5: leitura automática somente do JSON público, local à prévia, sem persistir evidências.
 const stockfishEvidenceById=Object.create(null);
-function renderStockfishEvidence(){const n=$('stockfishEvidence');if(!n)return;const raw=current&&stockfishEvidenceById[current.id];const model=current?StockfishF5.normalize(raw,current,observationLegal):null;n.textContent=StockfishF5.render(model);}
-
+let stockfishManualOverride=false;
+function renderStockfishEvidence(){
+ const n=$('stockfishEvidence');if(!n)return;
+ const raw=current&&stockfishEvidenceById[current.id];
+ const model=current?StockfishF5.normalize(raw,current,observationLegal):null;
+ n.textContent=StockfishF5.render(model);
+}
+function applyStockfishBundle(bundle){
+ const records=Array.isArray(bundle)?bundle:bundle&&bundle.records;
+ if(!Array.isArray(records)||records.length!==240)throw Error('Esperados exatamente 240 registros.');
+ if(bundle&&bundle.research_only===false)throw Error('Pacote sem indicação de pesquisa.');
+ const next=Object.create(null);
+ const expected=new Map(DATA.puzzles.map(p=>[p.id,p]));
+ for(const raw of records){
+  if(!raw||typeof raw.exercise_id!=='string'||Object.prototype.hasOwnProperty.call(next,raw.exercise_id))throw Error('ID inválido ou duplicado');
+  const ref=expected.get(raw.exercise_id);
+  if(!ref)throw Error('Exercício desconhecido: '+raw.exercise_id);
+  if(raw.quality?.diagnostic_certified!==false||raw.verification?.status!=='ENGINE_EVIDENCE_RESEARCH_NOT_DIAGNOSIS')throw Error('Evidência não experimental: '+raw.exercise_id);
+  const parsed=StockfishF5.normalize(raw,ref,observationLegal);
+  if(parsed.status!=='research')throw Error('Evidência inválida: '+raw.exercise_id+' / '+parsed.reason);
+  next[raw.exercise_id]=raw;
+ }
+ if(Object.keys(next).length!==expected.size)throw Error('Catálogo incompleto.');
+ Object.keys(stockfishEvidenceById).forEach(k=>delete stockfishEvidenceById[k]);
+ Object.assign(stockfishEvidenceById,next);
+ renderStockfishEvidence();
+ return records.length;
+}
 $('stockfishBundle').addEventListener('change',async function(){
  const file=this.files&&this.files[0];if(!file)return;
  const notice=$('stockfishImportNotice');
  try{
   if(file.size>3*1024*1024)throw Error('Arquivo maior que 3 MB.');
   const bundle=JSON.parse(await file.text());
-  const records=Array.isArray(bundle)?bundle:bundle&&bundle.records;
-  if(!Array.isArray(records)||records.length!==240)throw Error('Esperados exatamente 240 registros.');
-  const next=Object.create(null);let valid=0;
-  for(const raw of records){
-   if(!raw||typeof raw.exercise_id!=='string'||Object.prototype.hasOwnProperty.call(next,raw.exercise_id))throw Error('ID inválido ou duplicado');
-   const ref=DATA.puzzles.find(p=>p.id===raw.exercise_id);
-   if(!ref)throw Error('Exercício desconhecido: '+raw.exercise_id);
-   const parsed=StockfishF5.normalize(raw,ref,observationLegal);
-   if(parsed.status!=='research')throw Error('Evidência inválida: '+raw.exercise_id+' / '+parsed.reason);
-   next[raw.exercise_id]=raw;valid++;
-  }
-  if(valid!==DATA.puzzles.length)throw Error('Catálogo incompleto');
-  Object.keys(stockfishEvidenceById).forEach(k=>delete stockfishEvidenceById[k]);
-  Object.assign(stockfishEvidenceById,next);
-  notice.textContent='240 evidências experimentais carregadas nesta sessão. Nenhum diagnóstico certificado.';
-  renderStockfishEvidence();
- }catch(error){notice.textContent='Pacote não aplicado: '+error.message;}
+  const count=applyStockfishBundle(bundle);
+  stockfishManualOverride=true;
+  notice.textContent=count+' análises experimentais carregadas manualmente nesta sessão. Nenhum diagnóstico certificado.';
+ }catch(error){notice.textContent='Pacote manual não aplicado: '+error.message;}
  this.value='';
 });
+async function loadStockfishAutomatically(){
+ const notice=$('stockfishImportNotice');
+ if(typeof window.fetch!=='function'){notice.textContent='Carregamento automático indisponível neste ambiente; use o arquivo manual.';return;}
+ notice.textContent='Carregando 240 análises Stockfish públicas e experimentais...';
+ try{
+  const response=await window.fetch('./stockfish-240-public.json',{cache:'no-cache',credentials:'omit'});
+  if(!response||!response.ok)throw Error('Arquivo público indisponível (HTTP '+(response&&response.status||'?')+')');
+  const bundle=await response.json();
+  if(stockfishManualOverride)return;
+  const count=applyStockfishBundle(bundle);
+  notice.textContent=count+' análises Stockfish carregadas automaticamente. Dados experimentais, sem diagnóstico certificado.';
+ }catch(error){
+  if(!stockfishManualOverride)notice.textContent='Análises automáticas indisponíveis: '+error.message+' Selecione o JSON manualmente.';
+ }
+}
+loadStockfishAutomatically();
