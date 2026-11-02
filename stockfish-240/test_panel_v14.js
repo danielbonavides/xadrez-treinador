@@ -6,6 +6,7 @@ const path=require('node:path');
 const Adaptive=require('../adaptive/core.js');
 const Evidence=require('./adapter.js');
 global.XadrezEvidence=Evidence;
+const EVIDENCE=JSON.parse(fs.readFileSync(path.join(__dirname,'EXERCICIOS_PUBLICOS_240_RESEARCH.json'),'utf8'));
 const html=fs.readFileSync(path.join(__dirname,'..','teste-v1.4','index.html'),'utf8');
 const inline=html.match(/<script>const DATA=([\s\S]*?)<\/script>/);
 assert.ok(inline,'v1.4 preview script missing');
@@ -46,7 +47,7 @@ async function check(name,fn){try{await fn();results.push({test:name,status:'PAS
   assert.equal(calls,0);assert.match(h.map.sfStatus.textContent,/Desligado/);assert.equal(h.writes,0);
  });
  await check('V14-P02 uses preview-relative evidence URL and real PedagogyAdapter',async()=>{
-  const calls=[];const h=harness({currentId:'EX0006',fetchImpl:(url,options)=>{calls.push({url,options});return Promise.resolve({ok:true,json:()=>Promise.resolve(require('./EXERCICIOS_PUBLICOS_240_RESEARCH.json'))});}});
+  const calls=[];const h=harness({currentId:'EX0006',fetchImpl:(url,options)=>{calls.push({url,options});return Promise.resolve({ok:true,json:()=>Promise.resolve(EVIDENCE)});}});
   h.map.sfToggle.click();await settle();
   assert.equal(calls[0].url,'../stockfish-240/EXERCICIOS_PUBLICOS_240_RESEARCH.json');
   assert.equal(calls[0].options.credentials,'omit');assert.equal(calls[0].options.cache,'no-store');
@@ -72,22 +73,22 @@ async function check(name,fn){try{await fn();results.push({test:name,status:'PAS
  });
  await check('V14-P07 disabling during pending fetch prevents late render',async()=>{
   let resolve;const wait=new Promise(r=>resolve=r);const h=harness({fetchImpl:()=>wait});h.map.sfToggle.click();await settle();h.map.sfToggle.click();
-  resolve({ok:true,json:()=>Promise.resolve(require('./EXERCICIOS_PUBLICOS_240_RESEARCH.json'))});await settle();
+  resolve({ok:true,json:()=>Promise.resolve(EVIDENCE)});await settle();
   assert.match(h.map.sfStatus.textContent,/Desligado/);assert.equal(h.map.sfToggle.attrs['aria-pressed'],'false');assert.equal(h.writes,0);
  });
  await check('V14-P08 missing evidence row disables only that exercise',async()=>{
-  const partial=require('./EXERCICIOS_PUBLICOS_240_RESEARCH.json');const altered={...partial,puzzles:partial.puzzles.filter(p=>p.exercise_id!=='EX0001')};
+  const partial=EVIDENCE;const altered={...partial,puzzles:partial.puzzles.filter(p=>p.exercise_id!=='EX0001')};
   const h=harness({currentId:'EX0001',fetchImpl:()=>Promise.resolve({ok:true,json:()=>Promise.resolve(altered)})});h.map.sfToggle.click();await settle();
   assert.match(h.map.sfStatus.textContent,/EX0001.*ID_INEXISTENTE/);
   h.context.current={id:'EX0002'};h.map.next.click();await settle();assert.match(h.map.sfStatus.textContent,/Stockfish 19/);assert.equal(h.writes,0);
  });
  await check('V14-P09 panel toggle is ephemeral and never writes adaptive or attempt keys',async()=>{
-  const h=harness({fetchImpl:()=>Promise.resolve({ok:true,json:()=>Promise.resolve(require('./EXERCICIOS_PUBLICOS_240_RESEARCH.json'))})});
+  const h=harness({fetchImpl:()=>Promise.resolve({ok:true,json:()=>Promise.resolve(EVIDENCE)})});
   h.map.sfToggle.click();await settle();h.map.sfToggle.click();
   assert.match(h.map.sfStatus.textContent,/Desligado/);assert.equal(h.map.sfToggle.attrs['aria-pressed'],'false');assert.equal(h.writes,0);
  });
  await check('V14-P10 adaptive queue, preference and import events refresh read-only panel',async()=>{
-  const h=harness({fetchImpl:()=>Promise.resolve({ok:true,json:()=>Promise.resolve(require('./EXERCICIOS_PUBLICOS_240_RESEARCH.json'))})});
+  const h=harness({fetchImpl:()=>Promise.resolve({ok:true,json:()=>Promise.resolve(EVIDENCE)})});
   h.map.sfToggle.click();await settle();
   assert.equal(typeof h.map.refreshQueue.listeners.change?.[0],'function');
   assert.equal(typeof h.map.trainingMode.listeners.change?.[0],'function');
