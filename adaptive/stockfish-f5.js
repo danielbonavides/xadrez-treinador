@@ -30,7 +30,7 @@ function render(model){
  const labels={multipv_top_1:'Melhor linha Stockfish (MultiPV 1)',multipv_top_2:'Segunda linha Stockfish (MultiPV 2)',human_forced:'Continuação do lance histórico',g5_forced:'Continuação da sugestão G5'};
  const notation=uci=>uci.slice(0,2)+'→'+uci.slice(2,4)+(uci.length>4?'='+uci[4].toUpperCase():'');
  const fmt=l=>(labels[l.kind]||'Linha exploratória')+': '+notation(l.uci)+' · '+(l.mate!==null?'Mate em '+l.mate:l.cp!==null?(l.cp/100).toFixed(2)+' peões (perspectiva do jogador)':'avaliação não informada')+' · Variante '+l.pv.map(notation).join(' ');
- return 'Análise Stockfish experimental — NÃO certifica erro nem tática. '+model.engine+(model.depth===null?'':' · profundidade '+model.depth)+'.\\n'+model.lines.map(fmt).join('\\n');
+ return 'Análise Stockfish experimental — NÃO certifica erro nem tática. '+model.engine+(model.depth===null?'':' · profundidade '+model.depth)+'.\n'+model.lines.map(fmt).join('\n');
 }
 root.StockfishF5={normalize,render};
 if(typeof module!=='undefined'&&module.exports)module.exports=root.StockfishF5;
