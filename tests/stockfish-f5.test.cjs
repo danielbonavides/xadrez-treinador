@@ -1,0 +1,12 @@
+const test=require('node:test'),assert=require('node:assert/strict');
+const F5=require('../adaptive/stockfish-f5.js');
+const e={id:'EX0001',fen:'8/8/8/8/8/8/4P3/4K2k w - - 0 1',ply:1,melhor_uci:'e2e4'};
+const legal=(_,uci)=>uci==='e2e4';
+const data={schema_version:'xadrez.pedagogia.v1.3',exercise_id:e.id,position:{fen_before:e.fen,ply:1},candidate:{suggested_uci_g5:'e2e4'},verification:{status:'ENGINE_EVIDENCE_RESEARCH_NOT_DIAGNOSIS',engine:'Stockfish',depth:10},quality:{diagnostic_certified:false,legal_moves_verified:true},lines:[{root_uci:'e2e4',pv_uci:['e2e4'],score_cp_pov_player:25,mate_in_pov_player:null}]};
+test('F5 missing evidence fails closed',()=>assert.equal(F5.normalize(null,e,legal).status,'unavailable'));
+test('F5 accepts research-only contract without certifying diagnostics',()=>{const m=F5.normalize(data,e,legal);assert.equal(m.status,'research');assert.equal(m.diagnostic_certified,false);assert.match(F5.render(m),/NÃO certifica/);});
+test('F5 exercise ID mismatch fails closed',()=>assert.equal(F5.normalize({...data,exercise_id:'EX0002'},e,legal).status,'unavailable'));
+test('F5 illegal root fails closed',()=>assert.equal(F5.normalize({...data,lines:[{root_uci:'a2a4',pv_uci:['a2a4']}]},e,legal).status,'unavailable'));
+test('F5 certified claim is not accepted as experimental contract',()=>assert.equal(F5.normalize({...data,quality:{diagnostic_certified:true}},e,legal).status,'unavailable'));
+test('F5 malformed lines fail closed',()=>assert.equal(F5.normalize({...data,lines:'bad'},e,legal).status,'unavailable'));
+test('F5 unknown schema fails closed',()=>assert.equal(F5.normalize({...data,schema_version:'unknown'},e,legal).status,'unavailable'));
