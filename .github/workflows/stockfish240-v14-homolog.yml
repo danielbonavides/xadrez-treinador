@@ -1,0 +1,40 @@
+name: XADREZ Web v1.4 + Stockfish 240 homologation
+on:
+  push:
+    branches:
+      - feat/web-v14-stockfish240-homolog-20261102-r2
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  homologation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Regenerate v1.4 preview deterministically
+        run: node tools/build-adaptive.cjs
+      - name: Protect production baseline and generated preview
+        run: |
+          git diff --exit-code -- teste-v1.4 adaptive/revisions.js adaptive/legacy-revisions.js
+          git diff --exit-code -- index.html teste-v1.2/index.html
+      - name: Validate JavaScript syntax
+        run: |
+          node --check adaptive/core.js
+          node --check stockfish-240/adapter.js
+          node --check adaptive/integration.js
+          node --check tests/stockfish240-v14.test.cjs
+      - name: Run adaptive, UI and Stockfish 240 contracts
+        run: node --test tests/adaptive.test.cjs tests/ui.test.cjs tests/stockfish-f5.test.cjs tests/stockfish240-v14.test.cjs
+      - name: Run independent evidence adapter synthetic and catalog tests
+        run: node stockfish-240/test_adapter.js
+      - name: Validate all public puzzles with python-chess
+        run: |
+          python -m pip install python-chess==1.999
+          python tests/catalog_oracle.py
