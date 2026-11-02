@@ -35,9 +35,24 @@ test('mate_not_cp_fabrication',()=>{const d=clone();const a=d.puzzles.find(x=>x.
 test('privacy_extra_id_rejected',()=>{const d=clone();d.puzzles[0].game_id='123456';const r=run(d);assert.equal(r.stats.valid,239);assert.equal(r.errors.get('EX0001'),'PRIVACIDADE_OU_SCHEMA')});
 test('uncertified_fails_when_flagged_certified',()=>{const d=clone();d.puzzles[0].quality.diagnostic_certified=true;const r=run(d);assert.equal(r.stats.valid,239)});
 test('g5_stockfish_disagreement_not_error',()=>{const r=run(original);assert.equal(r.byId.get('EX0006').different,true);assert.equal(r.byId.get('EX0006').certified,false)});
-test('panel_no_localstorage_or_scheduler_writes',()=>{const js=fs.readFileSync(path.join(__dirname,'panel.js'),'utf8');assert.doesNotMatch(js,/localStorage\s*\.|setItem\s*\(/);assert.doesNotMatch(js,/stage\s*=|interval\s*=|acertou\s*=/)});
-test('panel_disable_switch_is_ephemeral',()=>{const js=fs.readFileSync(path.join(__dirname,'panel.js'),'utf8');assert.match(js,/let enabled=false/);assert.match(js,/enabled=false;nonce\+\+/)});
-test('http_failure_is_optional',()=>{const js=fs.readFileSync(path.join(__dirname,'panel.js'),'utf8');assert.match(js,/if\(!response.ok\)throw Error/);assert.match(js,/\.catch\(error=>\{failure=/)});
+const integration=fs.readFileSync(path.join(__dirname,'..','adaptive','integration.js'),'utf8');
+test('integration uses full PedagogyAdapter and never writes adaptive state',()=>{
+ const block=integration.slice(integration.indexOf('// Stockfish 240'));
+ assert.match(block,/Adaptive\.PedagogyAdapter\(bundle,DATA\.puzzles,R88\)/);
+ assert.doesNotMatch(block,/localStorage|setItem\s*\(|AdaptiveScheduler|QueueBuilder|AttemptRecorder/);
+});
+test('partial catalog does not disable the whole evidence bundle',()=>{
+ const block=integration.slice(integration.indexOf('// Stockfish 240'));
+ assert.match(block,/parsed\.stats/);
+ assert.doesNotMatch(block,/records\.length\s*!==\s*240|valid\s*!==\s*DATA\.puzzles\.length/);
+});
+test('preview imports local JSON and has no mandatory network dependency',()=>{
+ const controls=fs.readFileSync(path.join(__dirname,'..','adaptive','controls.html'),'utf8');
+ const builder=fs.readFileSync(path.join(__dirname,'..','tools','build-adaptive.cjs'),'utf8');
+ assert.match(controls,/type="file"/);
+ assert.match(builder,/stockfish-240\/adapter\.js/);
+ assert.doesNotMatch(builder,/fetch\s*\(/);
+});
 const fails=assertLog.filter(x=>x.status==='FAIL');
 console.log(JSON.stringify({total:assertLog.length,pass:assertLog.length-fails.length,fail:fails.length,results:assertLog},null,2));
 if(fails.length)process.exitCode=1;
