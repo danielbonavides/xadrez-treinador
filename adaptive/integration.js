@@ -3,11 +3,15 @@ const PREFS_KEY='xadrez_v1_4_preferences_test_v1';
 // O getter de localStorage também pode lançar SecurityError.
 const storage={getItem:key=>window.localStorage.getItem(key),setItem:(key,value)=>window.localStorage.setItem(key,value)};
 const recorder=new Adaptive.AttemptRecorder(storage,ATTEMPTS_KEY);
+const SEQUENCES_KEY='xadrez_v1_4_sequences_test_v1';
+const sequenceRecorder=new Adaptive.AttemptRecorder(storage,SEQUENCES_KEY);
+let sequenceMode='1',sequenceRun=null;
 const catalog=Adaptive.ExerciseCatalog(DATA.puzzles,CATALOG_REVISIONS,(fen,uci)=>legalUciForFen(fen).includes(uci));
 let prefs=Adaptive.preferences(null);
 try{prefs=Adaptive.preferences(JSON.parse(storage.getItem(PREFS_KEY)));}catch(e){$('preferenceNotice').textContent='Preferências indisponíveis; usando padrão.';}
 let lastMove=null,current=null,sel=null,result=null,visibleState=null,pendingPromotion=null,attempts=recorder.records,counter=0,queue=[],used=new Set();
 let projections=[],queueReady=false;
+$('exerciseLength').value='1';
 $('trainingMode').value=prefs.default_mode;$('cadence').value=String(prefs.new_to_review_ratio[1]);
 $('modal').value=prefs.filters.modalidade;$('phase').value=prefs.filters.fase;$('color').value=prefs.filters.cor;
 function newEventId(){if(window.crypto&&typeof window.crypto.randomUUID==='function')return 'evt_'+window.crypto.randomUUID();const bytes=new Uint32Array(4);if(window.crypto&&window.crypto.getRandomValues){window.crypto.getRandomValues(bytes);return 'evt_'+Array.from(bytes,n=>n.toString(16)).join('_');}return 'evt_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2)+'_'+Math.random().toString(36).slice(2);}
@@ -35,17 +39,23 @@ function renderReview(){
  const hours=p.due_at_utc?Math.max(0,(Date.parse(p.due_at_utc)-Date.now())/3600000):null;
  $('reviewStatus').textContent=labels[p.status]+(hours===null?'':hours===0?' · disponível agora':hours<1?' · em '+Math.ceil(hours*60)+' min':hours<24?' · em '+Math.ceil(hours)+' h':' · em '+Math.ceil(hours/24)+' dias');
 }
-function downloadBackup(out){const b=new Blob([JSON.stringify(out,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='XADREZ_TREINO_V1_4_TESTE.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
+function downloadBackup(out){if(out&&typeof out==='object'){out.sequence_attempts=sequenceRecorder.backup(null).puzzles_tentados;out.sequence_mode_schema='xadrez.sequence_attempt.v1';}const b=new Blob([JSON.stringify(out,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='XADREZ_TREINO_V1_4_TESTE.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
 const mergeAttemptHistories=Adaptive.mergeHistories;
 $('retrySave').addEventListener('click',()=>{recorder.retry();attempts=recorder.records;renderAdaptive();});
 $('importProgress').addEventListener('change',async function(){
  const file=this.files&&this.files[0];if(!file)return;
  try{if(file.size>5*1024*1024)throw Error('Arquivo maior que 5 MB');const incoming=JSON.parse(await file.text()),records=Array.isArray(incoming)?incoming:incoming&&incoming.puzzles_tentados;
+ const sequenceRecords=!Array.isArray(incoming)&&incoming?.sequence_attempts||[];
+ if(!Array.isArray(sequenceRecords))throw Error('Sequências inválidas no backup');
+ if(sequenceRecords.length)Adaptive.mergeHistories(sequenceRecorder.records,sequenceRecords);
  const before=recorder.records.length,merged=mergeAttemptHistories(recorder.pending,records),r=recorder.save(merged);
- if(!r.saved)throw Error(r.error);attempts=recorder.records;$('importNotice').textContent=`Histórico conciliado: ${attempts.length-before} registros adicionados. Preferências atuais preservadas.`;resetQueue();
+ if(!r.saved)throw Error(r.error);
+ if(sequenceRecords.length){const seqSaved=sequenceRecorder.save(sequenceRecords);if(!seqSaved.saved)throw Error('Histórico G5 importado; sequência NÃO SALVA: '+seqSaved.error);}
+ attempts=recorder.records;$('importNotice').textContent=`Histórico conciliado: ${attempts.length-before} registros adicionados. Preferências atuais preservadas.`;resetQueue();
  }catch(e){$('importNotice').textContent='Importação não aplicada: '+e.message;}this.value='';renderAdaptive();
 });
 ['trainingMode','cadence'].forEach(id=>$(id).addEventListener('change',resetQueue));
+$('exerciseLength').addEventListener('change',()=>{sequenceMode=$('exerciseLength').value==='3'?'3':'1';resetQueue();});
 $('refreshQueue').addEventListener('click',resetQueue);
 window.addEventListener('storage',e=>{if(e.key===ATTEMPTS_KEY){recorder.reload();attempts=recorder.records;queueReady=false;renderAdaptive();}});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){queueReady=false;renderAdaptive();}});
@@ -78,6 +88,7 @@ function applyStockfishBundle(bundle){
  Object.keys(stockfishEvidenceById).forEach(k=>delete stockfishEvidenceById[k]);
  Object.assign(stockfishEvidenceById,next);
  renderStockfishEvidence();
+ if(sequenceMode==='3'&&!sequenceRun)resetQueue();
  return records.length;
 }
 $('stockfishBundle').addEventListener('change',async function(){
