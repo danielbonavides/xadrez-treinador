@@ -23,6 +23,7 @@ test('real_catalog_240_by_id',()=>{const r=run(original);assert.equal(r.stats.va
 test('schema_root_fail_closed_only_research',()=>{const d=clone();d.schema_version='wrong';assert.equal(run(d).stats.globalError,'CATALOGO_INVALIDO')});
 test('missing_catalog',()=>{assert.equal(run(null).stats.globalError,'CATALOGO_INVALIDO')});
 test('malformed_json_rejected',()=>{assert.throws(()=>JSON.parse('{not_json'),SyntaxError)});
+test('missing_json_record_only_disables_one_panel',()=>{const d=clone();d.puzzles.shift();const r=run(d);assert.equal(r.stats.globalError,null);assert.equal(r.stats.valid,239);assert.equal(r.errors.get('EX0001'),'ID_INEXISTENTE')});
 test('unknown_id_disables_just_missing_puzzle',()=>{const d=clone();d.puzzles[0].exercise_id='EX9999';const r=run(d);assert.equal(r.stats.valid,239);assert.equal(r.errors.get('EX0001'),'ID_INEXISTENTE')});
 test('duplicate_ids_disabled',()=>{const d=clone();d.puzzles[1].exercise_id=d.puzzles[0].exercise_id;const r=run(d);assert.equal(r.stats.valid,238);assert.equal(r.errors.get('EX0001'),'ID_DUPLICADO')});
 test('fen_mismatch_isolated',()=>{const d=clone();d.puzzles[0].position.fen_before='bad';const r=run(d);assert.equal(r.stats.valid,239);assert.equal(r.errors.get('EX0001'),'FEN_PLY')});
