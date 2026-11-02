@@ -88,7 +88,7 @@
     if (!shape(catalog,'root') || catalog.schema_version!==ROOT_SCHEMA ||
         catalog.status!=='ISOLADO_NAO_PUBLICADO' || !/^[a-f0-9]{64}$/i.test(catalog.source_sha256||'') ||
         !Array.isArray(catalog.puzzles) || !Array.isArray(puzzles) || !rules ||
-        (strict && (catalog.puzzles.length!==240 || puzzles.length!==240))) {
+        (strict && puzzles.length!==240)) {
       stats.globalError='CATALOGO_INVALIDO';
       return {byId,errors,stats};
     }
