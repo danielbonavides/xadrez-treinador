@@ -1,0 +1,24 @@
+name: XADREZ Web Stockfish240 isolated validation
+on:
+  push:
+    branches:
+      - feat/web-v12-stockfish240-v14-compat-20261101
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  stockfish-240-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate JS syntax
+        run: |
+          node --check stockfish-240/adapter.js
+          node --check stockfish-240/panel.js
+          node --check stockfish-240/test_adapter.js
+          node --check stockfish-240/test_real_web.js
+      - name: Run synthetic contract + real evidence tests
+        run: node stockfish-240/test_adapter.js
+      - name: Run full R88 240 puzzle join + 960 PV integration test
+        run: node stockfish-240/test_real_web.js
