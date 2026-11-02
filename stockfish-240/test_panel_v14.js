@@ -93,7 +93,7 @@ async function check(name,fn){try{await fn();results.push({test:name,status:'PAS
   assert.equal(typeof h.map.refreshQueue.listeners.change?.[0],'function');
   assert.equal(typeof h.map.trainingMode.listeners.change?.[0],'function');
   assert.equal(typeof h.map.importProgress.listeners.change?.[0],'function');
-  assert.equal(typeof h.windowEvents.storage,'function');assert.equal(typeof h.documentEvents.visibilitychange,'function');
+  assert.equal(typeof h.documentEvents['xadrez:exercise-changed'],'function');assert.equal(typeof h.windowEvents.storage,'function');assert.equal(typeof h.documentEvents.visibilitychange,'function');
   assert.equal(h.writes,0);
  });
  const fails=results.filter(x=>x.status==='FAIL');console.log(JSON.stringify({total:results.length,pass:results.length-fails.length,fail:fails.length,results},null,2));
