@@ -1,1 +1,30 @@
-The requested file reference is not currently visible. Use files.search or files.list to rediscover the file, then retry with a returned ref_id or file_id.
+'use strict';
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const vm = require('node:vm');
+const { normalizeCatalog } = require('./adapter.js');
+const html = fs.readFileSync(path.join(__dirname,'..','index.html'),'utf8');
+const match = html.match(/<script>const DATA=(\{.*?\});\s*\n/s);
+assert.ok(match,'Cannot parse legacy DATA');
+const DATA=JSON.parse(match[1]);
+const chessSource=html.match(/const R88=\{\};[\s\S]*?R88\.uci=m=>[^;]*;/);
+assert.ok(chessSource,'Cannot extract original R88 from the actual Web v1.2');
+const rules=vm.runInNewContext(chessSource[0]+';R88;',Object.create(null),{timeout:3000});
+const evidence=JSON.parse(fs.readFileSync(path.join(__dirname,'EXERCICIOS_PUBLICOS_240_RESEARCH.json'),'utf8'));
+const validated=normalizeCatalog(evidence,DATA.puzzles,rules);
+assert.equal(DATA.puzzles.length,240);
+assert.equal(validated.stats.valid,240,'240 baseline joins + 960 actual R88 PV legal replays required');
+assert.equal(validated.stats.divergences,68);
+assert.equal(validated.stats.globalError,null);
+for(const p of DATA.puzzles) {
+ assert.ok(validated.byId.has(p.id),'missing '+p.id);
+ assert.equal(validated.byId.get(p.id).g5,p.melhor_uci);
+}
+const stableFields=['xadrez_v1_attempts','xadrez_web_theme_v1','xadrez_web_sound_enabled_v1'];
+for (const key of stableFields) assert.ok(html.includes(key),'Legacy storage key missing '+key);
+assert.ok(html.includes('uci===current.melhor_uci'),'Legacy G5 scoring changed');
+assert.ok(html.includes('id="sfResearch"'),'Experimental panel missing');
+assert.ok(html.includes('src="./stockfish-240/adapter.js"'));
+assert.ok(html.includes('src="./stockfish-240/panel.js"'));
+console.log('PASS REAL_WEB_R88 240/240 joins; 960 PV legal; 68 divergences; G5/storage preserved; no schedule coupling');
