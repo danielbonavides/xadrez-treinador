@@ -168,3 +168,12 @@ Auditoria do dataset público derivado (240 candidatos): **227 sequências dispo
 **Verificações executadas:** o JavaScript gerado da prévia passou na verificação sintática; o roteiro runtime com scripts reais e 240 evidências públicas carregadas testou três decisões seguidas, duas respostas automáticas, conclusão, uma tentativa no armazenamento isolado, **zero** registros novos G5 e sentinela de produção intacta. Testes adicionais `tests/sequence3.test.cjs` cobrem elegibilidade 227/240, execução das cinco jogadas legais, desvio, ausência de linhas e dica; `tests/ui.test.cjs` cobre integração com UI, feedback, dica e isolamento.
 
 **Escopo de publicação:** apenas pasta `teste-v1.4/` e script público `adaptive/sequence-3.js`, sem merge nem alteração de `main/index.html`. CI e aceitação humana do novo modo devem ser reportadas explicitamente; não herdar PASS anteriores para funcionalidade nova.
+
+
+### F6 — Publicação isolada e CI final
+
+A prévia compilada `teste-v1.4/index.html` (blob `07e42533da3f2ad1f627ac34413a9652c96fc2ea`) e scripts `adaptive/sequence-3.js` e `adaptive/stockfish-f5.js` foram publicados com sucesso como **arquivos isolados em `main`**, sem incorporar a branch e sem tocar no arquivo raiz v1.2. Os 240 registros Stockfish públicos mantêm o mesmo arquivo já homologado. Na prévia, o formato inicial continua "1 lance" até o titular selecionar "3 lances seus".
+
+**CI final da branch: PASS**, [GitHub Actions #41440214434](https://github.com/danielbonavides/xadrez-treinador/actions/runs/41440214434): **44/44 testes JavaScript**, `build-adaptive.cjs` reprodutível, oracle `python-chess` aprovado, sem falhas. Inclui testes em todas as 227 sequências G5 de cinco meios-lances, testes da interface e tratamento de desvio legal, além de regressões F1–F5. A verificação do arquivo publicado na main confirmou `index.html` com blob original `2b3990a71c0a42cd29b7adbed3a95f5bc9afef3b`, PR #3 mantido **Draft e não mergeado**.
+
+Estado `GO_F6_TESTS_44_44` / `GO_F6_PREVIEW_SOURCE` / `PENDING_HUMAN_SAFARI_F6` / `NO_GO_MERGE_RELEASE`. Não tratar disponibilização dos arquivos como certificação de acesso HTTP do GitHub Pages; solicitar teste humano de 3 lances no Safari.
