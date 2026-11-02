@@ -69,6 +69,7 @@
     if(el) for(const eventType of ['click','change']) el.addEventListener(eventType,()=>queueMicrotask(render));
   }
   for (const nav of document.querySelectorAll('nav button')) nav.addEventListener('click',()=>queueMicrotask(render));
+  document.addEventListener('xadrez:exercise-changed',()=>queueMicrotask(render));
   window.addEventListener('storage',()=>queueMicrotask(render));
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)queueMicrotask(render);});
   render();
