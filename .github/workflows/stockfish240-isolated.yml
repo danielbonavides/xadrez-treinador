@@ -18,7 +18,10 @@ jobs:
           node --check stockfish-240/panel.js
           node --check stockfish-240/test_adapter.js
           node --check stockfish-240/test_real_web.js
+          node --check stockfish-240/test_panel.js
       - name: Run synthetic contract + real evidence tests
         run: node stockfish-240/test_adapter.js
       - name: Run full R88 240 puzzle join + 960 PV integration test
         run: node stockfish-240/test_real_web.js
+      - name: Run optional panel HTTP and interaction tests
+        run: node stockfish-240/test_panel.js
