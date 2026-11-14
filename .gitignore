@@ -1,0 +1,26 @@
+# Generated dependencies and build outputs
+node_modules/
+dist/
+build/
+.next/
+coverage/
+.vercel/
+
+# Local environments, secrets, and databases
+.env
+.env.*
+!.env.example
+*.sqlite
+*.sqlite3
+*.db
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Local logs, editors and Claude Code overrides
+*.log
+.vscode/
+.idea/
+**/.claude/settings.local.json
+.DS_Store
