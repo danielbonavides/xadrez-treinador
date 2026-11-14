@@ -6,38 +6,38 @@ Orientações para agentes responsáveis pelo aplicativo de treino de xadrez.
 - Não incluir PGNs privados, credenciais, tokens ou datasets pessoais na aplicação pública.
 - Publicação em GitHub Pages, merge, release e alterações de produção exigem autorização específica; somente documentação e artefatos autorizados entram em branch/PR.
 
-## Persistência obrigatória — PERSISTENCE_PROTOCOL_V1.2 (2026-11-13)
+## Persistência obrigatória — PERSISTENCE_PROTOCOL_V1.3 (2026-11-13)
 
-**Container efêmero. Arquivo não exportado = perdido.** `/workspace/`, `/home/`, `/tmp/`, `.runtime/` e link interno não comprovam persistência. Este protocolo vale para artefatos que precisam sobreviver à sessão (dados derivados, resultados, matrizes, ZIPs, checkpoints e relatórios). Saídas descartáveis de testes locais não exigem backup. Não pressupor acesso de Codex Cloud a pasta Windows sincronizada.
+**Container efêmero. Arquivo não exportado e recuperável = perdido.** Caminhos `/workspace/`, `/home/`, `/tmp/`, `.runtime/`, sandbox e links internos não são persistência. Aplica-se a resultados científicos, modelos, ZIPs, matrizes, relatórios e checkpoints que devem sobreviver à sessão; não a saídas descartáveis de testes.
 
-### Destinos autorizados
+### Destinos permanentes: somente escopos explicitados
 
-**Nenhum destino de dados científicos privados autorizado para este repositório público.** Proibido enviar ZIPs, PGNs, matrizes de usuário ou resultados privados por `git push` ou Git LFS. Regras atuais de desenvolvimento e publicação do treinador permanecem; se tarefa precisar de armazenamento externo novo, registrar destino em atualização autorizada de `AGENTS.md` antes de computação pesada.
+**Sem destino de dados científicos privados autorizado para este repositório público.** Não enviar ZIPs, PGNs, matrizes ou dados do jogador ao Git. Desenvolvimento web mantém fluxo já estabelecido; qualquer armazenamento externo novo exige autorização registrada por projeto.
 
-Autorização permanente **restrita a destino, projeto, branch, classificação de dados e operações aqui declaradas**; não pedir de novo dentro desse escopo. Nunca publicar dados em repositório público. Não incluir segredos, credenciais, tokens, PGNs brutos ou dados pessoais não autorizados. Git LFS só se já configurado e comprovado; caso contrário, usar partes pequenas. Limite de parte no Git não elimina custo ou crescimento do histórico.
+**Capacidade é específica de ferramenta, conta e sessão.** Uma falha de upload de 9,5 MB numa rota não comprova limite universal do Google Drive. Na reconstrução XADREZ foi reportado PASS de prova pequena de 34 bytes; outra rodada registrada no mesmo destino inclui `PASS_PERSISTENCE_3d3ef52f.json` com partes de 24 MiB e `BATCH_019_EXTERNAL_PASS.json` com lote recuperado. Tratar como evidência documental de rota distinta; **não generalizar**, apagar, mover nem invalidar checkpoints dessa rodada. Para novos uploads pelo conector que falhou, usar conservadoramente **até 2 MB**, sem tentar artefatos grandes como base64 no contexto.
 
-### P0 — prova de ida e volta antes de computação pesada
+### P0 — prova antes de computação pesada
 
-1. Identificar o destino **do executor efetivo** (Codex/automação), verificar permissões e espaço; não confundir capacidade do conector ChatGPT com capacidade de transferência direta do container Codex.
-2. Criar prova pequena sem dados sensíveis; enviar ao destino configurado, **recuperar independentemente**, comparar SHA-256 e tamanho. Para Git, testar push e fetch/clone de uma referência de prova no branch autorizado. Confirmar mecanismo de transferência dos arquivos grandes (push direto do container, Git LFS habilitado, ou partes de 90 MiB), sem trafegar ZIPs como base64 pelo contexto.
-3. Se falhar: `BLOCKED_PERSISTENCE`; **interromper só computação pesada**. Permitir leitura, auditoria, planejamento, código e testes pequenos sem gerar dados difíceis de recuperar. Não improvisar destino, ampliar permissões nem alterar canônicos.
+1. Confirmar ID/URL e permissões do destino fixo; não exigir nova aprovação se projeto, artefato e operação já cobertos por autorização permanente. Verificar acesso **pelo executor efetivo**, não apenas no ChatGPT. Destino não declarado continua sem autorização.
+2. Executar teste mínimo de ida e volta: **arquivo pequeno, upload, download independente e SHA-256 idêntico**. Para rota Git de grandes, fazer teste efetivo de `git push` na branch permitida, seguido de `git fetch`/`git clone` em diretório limpo e SHA-256 idêntico, antes de processar dados pesados. Confirmar que credencial e permissão funcionam no container real; testar capacidade de transferência sem colocar ZIPs no contexto.
+3. Falha: `BLOCKED_PERSISTENCE`. **Parar somente computação pesada**; leitura, auditoria, planejamento, código e testes leves seguem. Não improvisar outra conta, repo público ou destino não autorizado.
 
-### P1 — checkpoints e retomada
+### P1 — checkpoints recuperáveis e retomada
 
-- Registrar `run_id`, commit/fonte de entrada, versões, hashes de inputs, configuração, filtros, seeds e inventário de experimentos. Usar `exp_id` estável.
-- Checkpoint **a cada 10–20 experimentos OU 30 minutos, o que vier primeiro**, inclusive execução individual longa: persistir estado parcial retomável quando tecnicamente suportado; quando algoritmo não permitir checkpoint interno, registrar progresso antes de iniciar e exportar logo ao concluir. Não esperar horas sem registrar progresso verificável.
-- Manter `manifest.csv` com colunas mínimas **`exp_id,params_sha256,status,result_sha256,timestamp`**. Acrescentar `run_id`, arquivo/caminho remoto, bytes, schema e observações quando disponíveis.
-- Gravar arquivos completos, verificar SHA-256 local e publicar checkpoint versionado/imutável. `status=ok` somente após transferência confirmada. Nos checkpoints intermediários, aceitar verificação leve: tamanho + checksum remoto (`md5Checksum` do Drive quando disponível, ou identificador/hash remoto do Git); **não confundir metadados com readback de bytes**. Quando nenhum verificador remoto confiável existir, registrar `PENDING_READBACK`, não `PASS_EXPORT_PERSISTENCE`.
-- Retomada: ler `manifest.csv` **do destino externo**, validar `exp_id`, `params_sha256`, status, referência e hash/bytes; pular somente experimentos com `status=ok` e evidência consistente. Artefato ausente/corrompido: `CHECKPOINT_CORRUPT`, recalcular só esse experimento; não sobrescrever checkpoint íntegro.
-- Falha de transferência durante execução: parar **novos cálculos pesados**, preservar dados locais disponíveis e reportar `BLOCKED_EXPORT`.
+- Fixar `run_id`, `exp_id` estável, hashes dos inputs/planos/parâmetros, ambiente, versões, seeds e filtros. Escrever dados derivados em staging isolado; preservar canônicos.
+- Persistir checkpoint **a cada 10–20 experimentos OU 30 minutos, o que ocorrer primeiro**. Para experimento longo, salvar estado parcial se suportado; caso não, registrar início e persistir assim que concluir.
+- Manter `manifest.csv` versionado com colunas mínimas **`exp_id,params_sha256,status,result_sha256,timestamp`**, adicionando `run_id`, nome de arquivo, tamanho, ID/link externo e checksum da parte quando aplicável.
+- Finalizar resultado local antes de marcar `status=ok`. Enviar lote/manifesto imutável ao destino autorizado. Durante checkpoints, checagem leve de presença, ID, tamanho e checksum remoto **se efetivamente exposto** (ex.: `md5Checksum`; na rota Drive testada ele não foi retornado). Para Git, registrar SHA do blob/commit e SHA-256 calculado da parte. Metadado não substitui readback de bytes.
+- `status=ok` no manifesto só quando conteúdo correspondente tem comprovação suficiente de persistência no destino (readback anterior, checksum independente verificável ou gate próprio explícito). Caso contrário, usar `PENDING_READBACK`; não pular experimento na retomada com hash não conferido.
+- Retomada lê `manifest.csv` **do destino externo** e verifica `exp_id`, `params_sha256`, `status`, localização e checksum. Pular apenas experimentos válidos; `CHECKPOINT_CORRUPT` para partes ausentes/incompatíveis; recalcular somente o necessário. Falha de persistência durante execução: parar novos cálculos pesados e registrar `BLOCKED_EXPORT`.
 
-### P2 — entrega final e readback
+### P2 — entrega final e readback real
 
-- Produzir manifesto final, `SHA256SUMS`/`CHECKSUMS_SHA256.txt`, contagens, entradas, configurações, cobertura e exceções. Validar membros dos ZIPs e partes numeradas. Para partes GNU usar `split -b 90m`, com cada parte abaixo de 100 MB e SHA-256 próprio.
-- Após exportar, **baixar de novo do armazenamento externo** os arquivos finais; reconstruir ZIPs divididos, verificar SHA-256 integral contra origem, registrar `ZIP_READBACK.json` separado. Readback completo obrigatório ao final; checkpoints intermediários podem usar verificação leve.
-- `PASS_COMPUTE` não equivale a entrega. Marcar `PASS_EXPORT_PERSISTENCE` somente após readback final íntegro. Na falha prévia: `BLOCKED_PERSISTENCE`; se cálculo concluído mas exportação/readback falhou: `BLOCKED_EXPORT`. Preservar `PARTIAL` para limitações científicas e `DIVERGENCIA_RECONSTRUCAO` para divergências documentadas.
+- Gerar `SHA256SUMS` e manifesto com arquivos, parâmetros, tamanho, SHA-256, origem, cobertura, exceções e procedimento de recuperação. Validar membros de ZIP. Se usar Git, `split -b 90m` em partes numeradas; manter cada blob estritamente abaixo de 100 MB, observando custo/tamanho total do repositório.
+- Exportar por canal autorizado **fora do contexto conversacional**. Executar readback completo de destino externo: `git clone`/`git fetch` em área nova no caso Git, ou download real do Drive quando aplicável. Conferir SHA-256 de **todas as partes**; remontar e comparar SHA-256 do ZIP original. Salvar `ZIP_READBACK.json` separado.
+- `PASS_COMPUTE` = só cálculo. `PASS_EXPORT_PERSISTENCE` = conteúdo final recuperado e verificado. `BLOCKED_PERSISTENCE` = pré-condição falhou; `BLOCKED_EXPORT` = exportação/readback final falhou; `PARTIAL` = limitação científica; `DIVERGENCIA_RECONSTRUCAO` = divergência documentada. Não declarar entrega com URL sem bytes conferidos.
 
 ### Segurança e precedência
 
-- Este contrato não autoriza merge, deploy, produção, compartilhamento público, exclusão, sobrescrita de canônicos ou alteração de credenciais. Respeitar regras existentes de branch/PR, segurança e CI: aplicar sempre restrição mais forte. **Push para guardar dados não equivale a push de código** e só é permitido quando declarado expressamente acima.
-- Homologação estritamente somente leitura continua sem escrita. Se ambiente ativo não tiver conectores/canais necessários, declarar bloqueio específico e preservar trabalho leve. Não substituir prova real por plano.
+- Destinos permanentes acima não autorizam merge, deploy, mudanças de Production, publicação pública, exclusão, sobrescrita de canônicos, credenciais ou dados fora do projeto. Não fazer `git push --force`; evitar alteração de arquivos de código ao publicar partes, usar caminho dedicado e commits incrementais. Não colocar segredos, tokens, PGNs brutos ou dados pessoais não explicitamente autorizados no Git.
+- Preservar regras locais de branch, CI e segurança. Homologações expressamente somente leitura seguem somente leitura. O `AGENTS.md` na branch de PR só passa a reger a `main` após merge; para Codex numa branch diferente, fornecer essas instruções diretamente ou atualizar aquela branch por fluxo autorizado.
