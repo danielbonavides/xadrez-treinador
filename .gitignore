@@ -1,26 +1,30 @@
-# Generated dependencies and build outputs
+# Sistema e editores
+.DS_Store
+
+# Dependências e logs
 node_modules/
+*.log
+
+# Segredos
+.env
+.env.*
+*.pem
+*.key
+
+# Configuração local do Claude Code (pessoal; não versionar)
+.claude/settings.local.json
+
+# Build outputs, local data and editors
 dist/
 build/
 .next/
 coverage/
 .vercel/
-
-# Local environments, secrets, and databases
-.env
-.env.*
 !.env.example
 *.sqlite
 *.sqlite3
 *.db
-*.pem
-*.key
 *.p12
 *.pfx
-
-# Local logs, editors and Claude Code overrides
-*.log
 .vscode/
 .idea/
-**/.claude/settings.local.json
-.DS_Store
