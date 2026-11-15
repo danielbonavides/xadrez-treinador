@@ -3,40 +3,25 @@ on:
   push:
     branches:
       - feature/treinador-aberturas-a-b
+      - feature/stockfish-audio-animation-v1
+    paths:
+      - index.html
+      - aberturas-lab.html
+      - shared/**
+      - vendor/stockfish/**
+      - tests/**
+      - package.json
+      - .github/workflows/aberturas-lab-tests.yml
   pull_request:
     paths:
       - index.html
       - aberturas-lab.html
+      - shared/**
+      - vendor/stockfish/**
       - tests/**
       - package.json
       - .github/workflows/aberturas-lab-tests.yml
 jobs:
-  vendor-stockfish:
-    if: github.event_name == 'pull_request' && github.head_ref == 'feature/stockfish-audio-animation-v1'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: feature/stockfish-audio-animation-v1
-          persist-credentials: true
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-      - name: Vendor pinned engine
-        run: |
-          if test -s vendor/stockfish/stockfish-19-asm.js; then exit 0; fi
-          npm pack stockfish@19.0.1 --pack-destination /tmp
-          mkdir -p vendor/stockfish /tmp/xadrez-stockfish
-          tar -xzf /tmp/stockfish-19.0.1.tgz -C /tmp/xadrez-stockfish
-          cp /tmp/xadrez-stockfish/package/bin/stockfish-19-asm.js vendor/stockfish/stockfish-19-asm.js
-          sha256sum vendor/stockfish/stockfish-19-asm.js > vendor/stockfish/SHA256SUMS
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add vendor/stockfish
-          git commit -m 'build: vendor Stockfish 19 ASM for Safari'
-          git push origin HEAD:feature/stockfish-audio-animation-v1
   tests:
     runs-on: ubuntu-latest
     permissions:
