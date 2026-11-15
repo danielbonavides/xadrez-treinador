@@ -147,12 +147,12 @@ test('Stockfish and shared board effects wired in both trainers',()=>{
 test('inline browser scripts remain syntactically valid',async()=>{
  const vm=await import('node:vm');
  const index=readFileSync(new URL('../index.html',import.meta.url),'utf8');
- const main=index.match(/<script>([\\s\\S]*?)<\\/script>/);
+ const main=index.split('<script>')[1]?.split('</script>')[0];
  assert.ok(main,'main inline script');
- assert.doesNotThrow(()=>new vm.Script(main[1]));
- const lab=html.match(/<script type="module">([\\s\\S]*?)<\\/script>/);
+ assert.doesNotThrow(()=>new vm.Script(main));
+ const lab=html.split('<script type="module">')[1]?.split('</script>')[0];
  assert.ok(lab,'lab module');
- const withoutImports=lab[1].replace(/^import .*;$/gm,'');
+ const withoutImports=lab.split('\\n').filter(line=>!line.startsWith('import ')).join('\\n');
  assert.doesNotThrow(()=>new vm.Script(withoutImports));
  await import('../shared/board-effects.mjs');
  await import('../shared/stockfish-browser.mjs');
