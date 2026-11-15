@@ -58,3 +58,20 @@ test('guided mode auto-plays opponent and flips black board',()=>{
  assert.match(html,/learnerColor\(\)==='b'\?'hgfedcba'/);
  assert.match(html,/last\.move\.color!==learnerColor\(\)/);
 });
+
+test('original UX: themes and persistent audio controls',()=>{
+ for(const id of ['boardTheme','audioToggle','audioNotice','lineHint'])assert.ok(html.includes('id="'+id+'"'),id);
+ for(const key of ['xadrez_web_theme_v1','xadrez_web_sound_enabled_v1'])assert.ok(html.includes(key));
+ for(const kind of ['move','capture','castle','promotion','check'])assert.ok(html.includes(kind+':['));
+ assert.match(html,/function playMoveSound\(kind\)/);
+ assert.match(html,/playMoveSound\(soundKind\(played\)\)/);
+ assert.match(html,/data-theme="classic"/);
+ assert.match(html,/data-theme="light"/);
+});
+test('deviation displays expected move on board',()=>{
+ assert.match(html,/lineSuggestion=expectedMove\(\);mode='free'/);
+ assert.match(html,/classList.add\('expected-from'\)/);
+ assert.match(html,/classList.add\('expected-to'\)/);
+ assert.match(html,/Lance da linha:/);
+ assert.match(html,/lineSuggestion=null;notice='Lance desfeito'/);
+});
