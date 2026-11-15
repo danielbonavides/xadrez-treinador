@@ -16,6 +16,7 @@
 <p class="muted small">Exercícios didáticos, não derivados automaticamente de partidas reais. Lances legais validados por chess.js. Métricas locais, sem sincronização G5/DEV/TESTE3. No modo guiado, o adversário responde automaticamente.</p></div></div></main>
 <script type="module">
 import {Chess} from 'https://cdn.jsdelivr.net/npm/chess.js@1.4.0/+esm';
+const $=id=>document.getElementById(id);
 const THEME_KEY='xadrez_web_theme_v1';
 const validThemes=new Set(['dark','classic','light']);
 let theme='dark';try{const value=localStorage.getItem(THEME_KEY);if(validThemes.has(value))theme=value;}catch(e){}
@@ -86,7 +87,7 @@ const lessons=[
 {id:'budapeste',group:'B',name:'Budapeste — Pretas contra 2.c4',desc:'Somente contra 1.d4 Nf6 2.c4: ...e5 e ...Ng4 após captura.',moves:['d4','Nf6','c4','e5','dxe5','Ng4'],notes:['Centro branco','Desenvolver','Peão c4','Gambito ...e5','Brancas aceitam','Pressionar peão e5']}
 ];
 for(const l of lessons){const test=new Chess();for(const san of l.moves){try{test.move(san)}catch(e){throw Error('Sequência inválida: '+l.id+' '+san)}}}
-const $=id=>document.getElementById(id), glyph={k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟︎'};
+const glyph={k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟︎'};
 let lesson=lessons[0],game=new Chess(),history=[],selected=null,promotions=[],mode='guided',progress=0,manualUserMoves=0,stats={correct:0,deviations:0,completed:0},notice='',lineSuggestion=null;
 const learnerColor=()=>['london','budapeste'].includes(lesson.id)?'b':'w';
 const learnerMoveCount=()=>lesson.moves.filter((_,i)=>(i%2===0?'w':'b')===learnerColor()).length;
