@@ -93,3 +93,30 @@ test('piece renderer matches original trainer SVG styling',()=>{
  assert.match(html,/textNode\.setAttribute\('stroke-width','1\.8'\)/);
  assert.match(html,/\.sq svg\.piece-svg\{width:82%;height:82%/);
 });
+
+test('original navigation links A+B without replacing original trainer',()=>{
+ const index=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+ assert.match(index,/<a class="nav-ab" href="\.\/aberturas-lab\.html"[^>]*>Treinar Aberturas A\+B<\/a>/);
+ for(const tab of ['overview','trainer','openings','method'])assert.ok(index.includes('data-tab="'+tab+'"'));
+});
+test('post-opening continuation uses legal bot moves and preserves chess position',()=>{
+ assert.match(html,/function chooseBotMove\(\)/);
+ assert.match(html,/const moves=game\.moves\(\{verbose:true\}\)/);
+ assert.match(html,/game\.move\(\{from:m\.from,to:m\.to,promotion:m\.promotion\}\)/);
+ assert.match(html,/game\.undo\(\)/);
+ assert.match(html,/function autoContinuation\(\)/);
+ assert.match(html,/mode='continuation';notice\+=' · Continue partida/);
+ assert.match(html,/mode==='continuation'&&source!=='bot'/);
+ assert.match(html,/if\(game\.isCheckmate\(\)\)score\+=100000/);
+ assert.match(html,/mode==='continuation'&&game\.turn\(\)!==learnerColor\(\)/);
+ assert.ok(html.includes('id="playerSide"'));
+ assert.ok(html.includes('id="continuation"'));
+});
+test('all nine opening endings leave valid continuation for learner',()=>{
+ for(const lesson of lessons){
+  const game=new Chess();
+  for(const san of lesson.moves)game.move(san);
+  assert.ok(!game.isGameOver(),lesson.id+' must allow continuation');
+  assert.ok(game.moves().length>0);
+ }
+});
