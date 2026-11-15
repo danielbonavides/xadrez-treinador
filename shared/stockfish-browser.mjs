@@ -1,6 +1,6 @@
-// UCI browser adapter. Stockfish.js ASM single-thread from pinned CDN; lazy loading.
-// Requires network. Graceful error when CDN, worker, or engine unavailable.
-const ENGINE_URL='https://cdn.jsdelivr.net/npm/stockfish@19.0.1/bin/stockfish-19-asm.js';
+// UCI browser adapter. Stockfish.js ASM single-thread vendored locally; lazy loading.
+// Same-origin static asset; no third-party CDN. Graceful error when asset, worker, or engine unavailable.
+const ENGINE_URL=new URL('../vendor/stockfish/stockfish-19-asm.js',import.meta.url).href;
 export class BrowserStockfish{
  constructor(){this.worker=null;this.ready=false;this.pending=null;this.info=null;this.boot=null;}
  async start(){
@@ -11,9 +11,8 @@ export class BrowserStockfish{
    const fail=e=>{if(done)return;done=true;clearTimeout(timer);worker?.terminate();if(url)URL.revokeObjectURL(url);this.worker=null;this.boot=null;reject(Error('Stockfish indisponível: '+(e?.message||'falha no carregamento'))) };
    const timer=setTimeout(()=>fail(Error('timeout de inicialização')),18000);
    try{
-    // Safari may reject cross-origin importScripts() from a blob worker.
-    // Fetch with CORS first; run fetched JS in same-origin blob worker.
-    const response=await fetch(ENGINE_URL,{mode:'cors',cache:'force-cache'});
+    // Fetch self-hosted engine, then start a same-origin blob worker.
+    const response=await fetch(ENGINE_URL,{mode:'same-origin',cache:'force-cache'});
     if(!response.ok)throw Error('HTTP '+response.status+' ao baixar Stockfish');
     const code=await response.text();
     if(done)return;
