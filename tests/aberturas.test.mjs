@@ -120,3 +120,26 @@ test('all nine opening endings leave valid continuation for learner',()=>{
   assert.ok(game.moves().length>0);
  }
 });
+
+test('Stockfish and shared board effects wired in both trainers',()=>{
+ const index=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+ const effects=readFileSync(new URL('../shared/board-effects.mjs',import.meta.url),'utf8');
+ const engine=readFileSync(new URL('../shared/stockfish-browser.mjs',import.meta.url),'utf8');
+ for(const page of [html,index]){
+  assert.match(page,/shared\/board-effects\.mjs/);
+  assert.match(page,/shared\/stockfish-browser\.mjs/);
+  assert.match(page,/Stockfish nível/);
+  assert.match(page,/Analisar posição/);
+  assert.match(page,/Volume/);
+ }
+ assert.match(index,/Continuar contra Stockfish/);
+ assert.match(index,/function applyContinuation\(move\)/);
+ assert.match(html,/function autoContinuation\(\)/);
+ assert.match(effects,/prefers-reduced-motion: reduce/);
+ assert.match(effects,/cloneNode\(true\)/);
+ assert.match(effects,/storage\.setItem\(key,String\(volume\)\)/);
+ assert.match(engine,/stockfish-19-asm\.js/);
+ assert.match(engine,/new Worker\(url\)/);
+ assert.match(engine,/go depth /);
+ assert.match(engine,/bestmove /);
+});
