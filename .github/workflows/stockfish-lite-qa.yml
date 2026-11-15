@@ -45,7 +45,7 @@ jobs:
           {
             echo '# Stockfish Lite CI — PR #9'
             echo
-            echo "- Commit tested: `$(git rev-parse HEAD)`"
+            echo "- Commit tested: $(git rev-parse HEAD)"
             echo "- GitHub Actions: https://github.com/danielbonavides/xadrez-treinador/actions/runs/${GITHUB_RUN_ID}"
             echo "- Result: $(if [ "$code" -eq 0 ]; then echo PASS; else echo FAIL; fi)"
             echo "- Node version: $(node --version)"
