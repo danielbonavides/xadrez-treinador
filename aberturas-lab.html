@@ -1,19 +1,79 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>XADREZ | Aberturas A+B — LAB</title>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#101827"><title>XADREZ | Aberturas A+B — LAB</title>
 <style>
 :root{font-family:system-ui,sans-serif;color:#eaf1f6;background:#101827}*{box-sizing:border-box}body{margin:0;padding:16px}main{max-width:1050px;margin:auto}a{color:#91d9ff}h1{font-size:1.7rem}h2{font-size:1.1rem}p{line-height:1.5}.muted{color:#b0c3d5}.layout{display:grid;grid-template-columns:minmax(280px,520px) minmax(250px,1fr);gap:20px}.panel{background:#1a293b;border:1px solid #42536a;border-radius:14px;padding:16px}.board{display:grid;grid-template-columns:repeat(8,1fr);width:100%;aspect-ratio:1;border:4px solid #64748b}.sq{border:0;border-radius:0;aspect-ratio:1;font-size:clamp(23px,5vw,46px);padding:0;cursor:pointer;line-height:1;color:#fff;text-shadow:0 1px 3px #000}.light{background:#f0d9b5}.dark{background:#b58863}.sq.sel{box-shadow:inset 0 0 0 4px #facc15}.sq.target{box-shadow:inset 0 0 0 4px #16a34a}.sq.last{background:#a7b866}.sq:focus-visible,button:focus-visible{outline:3px solid #facc15;outline-offset:-3px}.controls{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}button,select{font:inherit;background:#253a51;color:#fff;border:1px solid #64748b;border-radius:8px;padding:9px 12px;cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}select{max-width:100%;width:100%}.status{padding:12px;background:#24364b;border-radius:8px;min-height:65px}.pill{display:inline-block;border:1px solid #668eaa;border-radius:20px;padding:3px 9px;margin:3px;font-size:.82rem}.good{color:#8fe2b7}.warn{color:#ffd08a}.error{color:#ffaaa8}.row{display:flex;justify-content:space-between;gap:10px;margin:8px 0}.hidden{display:none}.small{font-size:.85rem}@media(max-width:730px){.layout{grid-template-columns:1fr}body{padding:10px}.panel{padding:12px}}
+
+:root{--sq-light:#efe6d0;--sq-dark:#83a09e;--sel:#eab95d;--page-bg:linear-gradient(155deg,#0c1522,#172c3b 70%,#111a29);--card:#182437;--stroke:#35465a;--dim:#a2b2c6;--accent:#74d4b3}body{background:var(--page-bg)}.panel{background:var(--card);border-color:var(--stroke)}.sq.light{background:var(--sq-light)}.sq.dark{background:var(--sq-dark)}.board{border:5px solid #667581;border-radius:8px;overflow:hidden;touch-action:manipulation;box-shadow:0 15px 36px #08111d88;isolation:isolate}.sq{display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;font-family:"Apple Symbols","Segoe UI Symbol","DejaVu Sans",serif;user-select:none}.sq .piece{display:block;position:relative;z-index:1;line-height:1}.sq .piece.white{color:#fffefa;text-shadow:0 2px 1px #243849,1px -1px #1a2e40,-1px 0 #1a2e40}.sq .piece.black{color:#172634;text-shadow:0 1px 1px #e1e7e9}.sq.sel{box-shadow:inset 0 0 0 4px var(--sel)}.sq.target{box-shadow:inset 0 0 0 5px #3aab83}.sq.target:after{content:"";position:absolute;width:19%;height:19%;border-radius:50%;background:#116c4d88;pointer-events:none}.sq.last{background-image:linear-gradient(#f6d36a55,#f6d36a55)}.sq.check{box-shadow:inset 0 0 0 5px #eb6a72}.sq.expected-from{box-shadow:inset 0 0 0 5px #f59e0b}.sq.expected-to{box-shadow:inset 0 0 0 5px #38bdf8}.sq.expected-from:after,.sq.expected-to:after{content:"";position:absolute;inset:9%;border:2px dashed currentColor;border-radius:4px;pointer-events:none}.sq.expected-from:after{color:#f59e0b}.sq.expected-to:after{color:#38bdf8}.sq .coord{font-size:.57rem;font-weight:800;position:absolute;left:3px;bottom:2px;opacity:.7;color:#163047;z-index:2}.theme-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:0 0 12px}.theme-controls label{font-size:.84rem;color:var(--dim)}.theme-controls select{width:auto;min-width:140px}.theme-controls button{min-height:42px}.sq:focus-visible{outline:3px solid #fff;outline-offset:-3px}body[data-theme="classic"]{--sq-light:#f0d9b5;--sq-dark:#b58863;--accent:#88d7b9}body[data-theme="light"]{--sq-light:#f3e9d8;--sq-dark:#8eaa9f;--card:#f7fafc;--stroke:#b9c9d2;--dim:#3c5667;--accent:#006c56;--page-bg:linear-gradient(145deg,#ecf5f6,#dfe9ee);color:#142638}body[data-theme="light"] .panel{color:#142638}body[data-theme="light"] button,body[data-theme="light"] select{background:#fff;color:#153145}body[data-theme="light"] .status{background:#e5eef4;color:#193346}body[data-theme="light"] .muted{color:#37546a}body[data-theme="light"] a{color:#006c56}body[data-theme="light"] .sq{color:inherit}body[data-theme="light"] .sq .piece.white{color:#fffefa}body[data-theme="light"] .sq .piece.black{color:#172634}@media(prefers-reduced-motion:reduce){.sq,.sq .piece{animation:none!important;transition:none!important}}@media(max-width:730px){.board{max-width:460px;margin:auto}.sq{font-size:clamp(26px,9vw,43px)}.layout{gap:12px}.theme-controls select{max-width:100%}}
 </style></head><body><main>
 <p><a href="./index.html">← Treinador principal</a> · LAB isolado, sem alteração do histórico existente</p>
 <h1>Treinador de Aberturas A+B</h1><p class="muted">Blitz 3+0 · Repertório sólido + gambitos · Treino guiado ou livre · Dados locais deste módulo</p>
-<div class="layout"><div class="panel"><div id="board" class="board" role="group" aria-label="Tabuleiro de xadrez, orientação conforme lado do aluno"></div>
+<div class="layout"><div class="panel"><div class="theme-controls"><label for="boardTheme">Tema do tabuleiro</label><select id="boardTheme" aria-label="Tema visual"><option value="dark">Escuro</option><option value="classic">Clássico</option><option value="light">Claro</option></select><button id="audioToggle" type="button" aria-pressed="false">Som: desligado</button><span id="audioNotice" class="small muted" aria-live="polite"></span></div><div id="board" class="board" role="group" aria-label="Tabuleiro de xadrez, orientação conforme lado do aluno"></div>
 <div id="promotion" class="controls hidden" aria-label="Promoção"><span>Promover para:</span><button data-promo="q">Dama</button><button data-promo="r">Torre</button><button data-promo="b">Bispo</button><button data-promo="n">Cavalo</button></div>
-<div class="controls"><button id="back">Voltar</button><button id="next">Próximo lance</button><button id="restart">Reiniciar</button><button id="hint">Dica</button></div><div id="status" class="status" aria-live="polite"></div><p id="move" class="small muted"></p></div>
+<div class="controls"><button id="back">Voltar</button><button id="next">Próximo lance</button><button id="restart">Reiniciar</button><button id="hint">Dica</button></div><div id="status" class="status" aria-live="polite"></div><div id="lineHint" class="status hidden" aria-live="polite"></div><p id="move" class="small muted"></p></div>
 <div class="panel"><h2>Exercício</h2><label for="lesson">Escolher abertura</label><select id="lesson"></select>
 <div class="controls"><button id="guided">Modo guiado</button><button id="free">Jogo livre</button></div>
 <p id="description"></p><p id="objective" class="status"></p><h2>Indicadores locais</h2><div class="row"><span>Acertos na sequência</span><b id="correct">0</b></div><div class="row"><span>Desvios</span><b id="deviations">0</b></div><div class="row"><span>Lições concluídas</span><b id="completed">0</b></div><div class="controls"><button id="export">Exportar JSON</button></div>
-<p class="muted small">Exercícios didáticos, não derivados automaticamente de partidas reais. Lances legais validados por chess.js. Métricas locais, sem sincronização G5/DEV/TESTE3. Sem adversário automático.</p></div></div></main>
+<p class="muted small">Exercícios didáticos, não derivados automaticamente de partidas reais. Lances legais validados por chess.js. Métricas locais, sem sincronização G5/DEV/TESTE3. No modo guiado, o adversário responde automaticamente.</p></div></div></main>
 <script type="module">
 import {Chess} from 'https://cdn.jsdelivr.net/npm/chess.js@1.4.0/+esm';
+const THEME_KEY='xadrez_web_theme_v1';
+const validThemes=new Set(['dark','classic','light']);
+let theme='dark';try{const value=localStorage.getItem(THEME_KEY);if(validThemes.has(value))theme=value;}catch(e){}
+document.body.dataset.theme=theme;
+$('boardTheme').value=theme;
+$('boardTheme').addEventListener('change',event=>{
+ const value=event.target.value;if(!validThemes.has(value))return;
+ theme=value;document.body.dataset.theme=theme;
+ try{localStorage.setItem(THEME_KEY,theme);}catch(e){}
+});
+
+const AUDIO_KEY='xadrez_web_sound_enabled_v1';
+let audioEnabled=false,audioContext=null;
+try{audioEnabled=localStorage.getItem(AUDIO_KEY)==='true';}catch(e){}
+function renderAudioToggle(){
+ const b=$('audioToggle');b.setAttribute('aria-pressed',String(audioEnabled));
+ b.textContent=audioEnabled?'Som: ligado':'Som: desligado';
+ b.setAttribute('aria-label',audioEnabled?'Desligar som dos movimentos':'Ativar som dos movimentos');
+}
+function ensureAudio(){
+ const AudioCtor=window.AudioContext||window.webkitAudioContext;
+ if(!AudioCtor)return null;
+ try{
+  if(!audioContext)audioContext=new AudioCtor();
+  if(audioContext.state==='suspended')audioContext.resume().catch(()=>{});
+  return audioContext;
+ }catch(e){return null;}
+}
+function playMoveSound(kind){
+ if(!audioEnabled)return;
+ const ctx=ensureAudio();if(!ctx||ctx.state==='closed')return;
+ try{
+  const now=ctx.currentTime+0.008;
+  const flavors={move:[460,0.075],capture:[300,0.12],castle:[390,0.13],promotion:[650,0.17],check:[750,0.15]};
+  const [hz,duration]=flavors[kind]||flavors.move;
+  const oscillator=ctx.createOscillator(),gain=ctx.createGain();
+  oscillator.type='sine';oscillator.frequency.setValueAtTime(hz,now);
+  oscillator.frequency.exponentialRampToValueAtTime(Math.max(120,hz*.72),now+duration);
+  gain.gain.setValueAtTime(0.0001,now);
+  gain.gain.exponentialRampToValueAtTime(.055,now+.008);
+  gain.gain.exponentialRampToValueAtTime(.0001,now+duration);
+  oscillator.connect(gain);gain.connect(ctx.destination);
+  oscillator.start(now);oscillator.stop(now+duration+.01);
+ }catch(e){} // Falha de áudio nunca bloqueia um lance legal.
+}
+$('audioToggle').addEventListener('click',()=>{
+ if(!audioEnabled&&!(window.AudioContext||window.webkitAudioContext)){
+  $('audioNotice').textContent='Áudio indisponível neste navegador.';return;
+ }
+ audioEnabled=!audioEnabled;
+ try{localStorage.setItem(AUDIO_KEY,String(audioEnabled));}catch(e){}
+ renderAudioToggle();
+ if(audioEnabled){ensureAudio();playMoveSound('move');}
+ $('audioNotice').textContent=audioEnabled?'Som ativado neste dispositivo':'Som desativado';
+});
+renderAudioToggle();
+
+
 const lessons=[
 {id:'italiana',group:'A',name:'Italiana — pressão em f7',desc:'Desenvolver rápido; preparar c3 e d4; proteger rei.',moves:['e4','e5','Nf3','Nc6','Bc4','Bc5','c3','Nf6','d3','d6','O-O','O-O'],notes:['Ocupar centro','Contestar centro','Atacar e5','Defender e5','Mirar f7','Desenvolver bispo','Preparar d4','Desenvolver cavalo','Consolidar centro','Sustentar e5','Proteger rei','Proteger rei']},
 {id:'escandinava',group:'A',name:'Escandinava — tempo contra dama',desc:'Responder a 1...d5 com exd5; desenvolver cavalo atacando dama.',moves:['e4','d5','exd5','Qxd5','Nc3','Qa5','d4','Nf6','Nf3'],notes:['Centro','Desafio imediato','Capturar peão','Dama recaptura','Ganhar tempo atacando dama','Retirada da dama','Centro forte','Desenvolvimento','Desenvolver com segurança']},
@@ -27,7 +87,7 @@ const lessons=[
 ];
 for(const l of lessons){const test=new Chess();for(const san of l.moves){try{test.move(san)}catch(e){throw Error('Sequência inválida: '+l.id+' '+san)}}}
 const $=id=>document.getElementById(id), glyph={k:'♚',q:'♛',r:'♜',b:'♝',n:'♞',p:'♟︎'};
-let lesson=lessons[0],game=new Chess(),history=[],selected=null,promotions=[],mode='guided',progress=0,manualUserMoves=0,stats={correct:0,deviations:0,completed:0},notice='';
+let lesson=lessons[0],game=new Chess(),history=[],selected=null,promotions=[],mode='guided',progress=0,manualUserMoves=0,stats={correct:0,deviations:0,completed:0},notice='',lineSuggestion=null;
 const learnerColor=()=>['london','budapeste'].includes(lesson.id)?'b':'w';
 const learnerMoveCount=()=>lesson.moves.filter((_,i)=>(i%2===0?'w':'b')===learnerColor()).length;
 try{stats={...stats,...JSON.parse(localStorage.getItem('xadrez_ab_lab_v1')||'{}')}}catch{}
@@ -35,29 +95,31 @@ const save=()=>{try{localStorage.setItem('xadrez_ab_lab_v1',JSON.stringify(stats
 const label=(m,n)=>((Math.floor(n/2)+1)+(n%2?'... ':'. ')+m.san);
 const scorePolicy={manualOnly:true,learnerColorByLesson:true,autoMoveNoCredit:true,undoRestoresStats:true,completionRequiresManualLearnerMoves:true};
 const square=(r,c)=>learnerColor()==='b'?'hgfedcba'[c]+(r+1):'abcdefgh'[c]+(8-r);
+function expectedMove(){const reference=new Chess();for(let i=0;i<progress;i++)reference.move(lesson.moves[i]);return reference.moves({verbose:true}).find(m=>m.san===lesson.moves[progress])||null}
+function soundKind(m){return game.isCheck()?'check':m.isKingsideCastle()||m.isQueensideCastle()?'castle':m.isPromotion()?'promotion':m.isCapture()||m.isEnPassant()?'capture':'move'}
 function autoOpponent(){if(mode!=='guided'||game.turn()===learnerColor()||progress>=lesson.moves.length)return;const san=lesson.moves[progress];const move=game.moves({verbose:true}).find(m=>m.san===san);if(!move){notice='Resposta adversária indisponível';render();return}commit({from:move.from,to:move.to,promotion:move.promotion},'opponent')}
 function render(){
 const board=$('board');board.replaceChildren();const legal=game.moves({verbose:true});const dest=selected?legal.filter(m=>m.from===selected).map(m=>m.to):[];
-for(let r=0;r<8;r++)for(let c=0;c<8;c++){const s=square(r,c),piece=game.get(s),b=document.createElement('button');b.type='button';b.className='sq '+((r+c)%2?'dark':'light');if(selected===s)b.classList.add('sel');if(dest.includes(s))b.classList.add('target');const last=history.at(-1)?.move;if(last&&(last.from===s||last.to===s))b.classList.add('last');b.textContent=piece?(piece.color==='w'?glyph[piece.type].replace('♚','♔').replace('♛','♕').replace('♜','♖').replace('♝','♗').replace('♞','♘').replace('♟︎','♙'):glyph[piece.type]):'';b.setAttribute('aria-label',s+' '+(piece?piece.color+' '+piece.type:'vazia'));b.onclick=()=>click(s);board.appendChild(b)}
-$('promotion').classList.toggle('hidden',!promotions.length);
+for(let r=0;r<8;r++)for(let c=0;c<8;c++){const s=square(r,c),piece=game.get(s),b=document.createElement('button');b.type='button';b.className='sq '+((r+c)%2?'dark':'light');if(selected===s)b.classList.add('sel');if(dest.includes(s))b.classList.add('target');const last=history.at(-1)?.move;if(last&&(last.from===s||last.to===s))b.classList.add('last');if(lineSuggestion?.from===s)b.classList.add('expected-from');if(lineSuggestion?.to===s)b.classList.add('expected-to');if(game.isCheck()&&piece?.type==='k'&&piece.color===game.turn())b.classList.add('check');if(piece){const span=document.createElement('span');span.className='piece '+(piece.color==='w'?'white':'black');span.textContent=piece.color==='w'?glyph[piece.type].replace('♚','♔').replace('♛','♕').replace('♜','♖').replace('♝','♗').replace('♞','♘').replace('♟︎','♙'):glyph[piece.type];b.appendChild(span)}if(c===0||r===7){const coord=document.createElement('span');coord.className='coord';coord.textContent=(c===0?String(8-r):'')+(r===7?'abcdefgh'[c]:'');if(learnerColor()==='b')coord.textContent=(c===0?String(r+1):'')+(r===7?'hgfedcba'[c]:'');b.appendChild(coord)}b.setAttribute('aria-label',s+' '+(piece?piece.color+' '+piece.type:'vazia'));b.onclick=()=>click(s);board.appendChild(b)}
+$('promotion').classList.toggle('hidden',!promotions.length);$('lineHint').classList.toggle('hidden',!lineSuggestion);$('lineHint').textContent=lineSuggestion?'Lance da linha: '+lineSuggestion.san+' · '+lineSuggestion.from+' → '+lineSuggestion.to+' (posição anterior ao desvio). Use Voltar para retomar.':'';
 $('status').textContent=notice|| (game.isCheckmate()?'Xeque-mate.':game.isDraw()?'Empate.':game.isCheck()?'Xeque.':mode==='guided'?'Treino guiado: próximo lance '+(lesson.moves[progress]||'concluído'):'Jogo livre: '+(game.turn()==='w'?'Brancas':'Pretas')+' jogam.');
 $('move').textContent=history.length?'Último lance: '+label(history.at(-1).move,history.length-1):'Posição inicial';
 $('correct').textContent=stats.correct;$('deviations').textContent=stats.deviations;$('completed').textContent=stats.completed;
 $('next').disabled=mode!=='guided'||progress>=lesson.moves.length||game.isGameOver();
 $('back').disabled=!history.length;$('hint').disabled=mode!=='guided'||progress>=lesson.moves.length;
 }
-function commit(move,source='manual'){const before=game.fen(),oldProgress=progress,oldMode=mode,oldStats={...stats},oldManual=manualUserMoves,turn=game.turn();let played;try{played=game.move(move)}catch{notice='Lance ilegal';render();return}history.push({fen:before,move:played,progress:oldProgress,mode:oldMode,stats:oldStats,manualUserMoves:oldManual});selected=null;promotions=[];if(mode==='guided'){if(played.san===lesson.moves[progress]){progress++;if(source==='manual'&&turn===learnerColor()){stats.correct++;manualUserMoves++}notice=(source==='auto'?'Demonstração: ':'Correto: ')+(lesson.notes[progress-1]||'Boa jogada');if(progress===lesson.moves.length){if(manualUserMoves===learnerMoveCount()){stats.completed++;notice+=' · Lição concluída'}else notice+=' · Sequência demonstrada (sem crédito integral)'}}else{if(source==='manual'&&turn===learnerColor())stats.deviations++;mode='free';notice='Desvio da linha. Jogo livre ativado; reinicie para retomar guia.'}}else notice='Lance legal: '+played.san;save();render();if(source==='manual'&&mode==='guided')autoOpponent()}
+function commit(move,source='manual'){const before=game.fen(),oldProgress=progress,oldMode=mode,oldStats={...stats},oldManual=manualUserMoves,turn=game.turn();let played;try{played=game.move(move)}catch{notice='Lance ilegal';render();return}history.push({fen:before,move:played,progress:oldProgress,mode:oldMode,stats:oldStats,manualUserMoves:oldManual});selected=null;promotions=[];lineSuggestion=null;playMoveSound(soundKind(played));if(mode==='guided'){if(played.san===lesson.moves[progress]){progress++;if(source==='manual'&&turn===learnerColor()){stats.correct++;manualUserMoves++}notice=(source==='auto'?'Demonstração: ':'Correto: ')+(lesson.notes[progress-1]||'Boa jogada');if(progress===lesson.moves.length){if(manualUserMoves===learnerMoveCount()){stats.completed++;notice+=' · Lição concluída'}else notice+=' · Sequência demonstrada (sem crédito integral)'}}else{if(source==='manual'&&turn===learnerColor())stats.deviations++;lineSuggestion=expectedMove();mode='free';notice='Desvio da linha. Jogo livre ativado; use Voltar ou Reiniciar para retomar guia. Lance esperado: '+(lineSuggestion?.san||lesson.moves[progress])}}else notice='Lance legal: '+played.san;save();render();if(source==='manual'&&mode==='guided')autoOpponent()}
 function click(s){if(game.isGameOver()||promotions.length)return;const p=game.get(s);if(p&&p.color===game.turn()){selected=selected===s?null:s;notice='';render();return}if(!selected)return;const moves=game.moves({verbose:true}).filter(m=>m.from===selected&&m.to===s);if(moves.length>1){promotions=moves;render();return}if(moves.length===1)commit({from:selected,to:s,promotion:moves[0].promotion});else{notice='Lance ilegal';render()}}
 document.querySelectorAll('[data-promo]').forEach(b=>b.onclick=()=>{const m=promotions.find(m=>m.promotion===b.dataset.promo);if(m)commit({from:m.from,to:m.to,promotion:m.promotion})});
-function reset(){game=new Chess();history=[];selected=null;promotions=[];progress=0;manualUserMoves=0;notice='Pronto para treinar';render();autoOpponent()}
+function reset(){game=new Chess();history=[];selected=null;promotions=[];progress=0;manualUserMoves=0;lineSuggestion=null;notice='Pronto para treinar';render();autoOpponent()}
 $('lesson').innerHTML=lessons.map((l,i)=>'<option value="'+i+'">'+l.group+' · '+l.name+'</option>').join('');
 $('lesson').onchange=()=>{lesson=lessons[Number($('lesson').value)];mode='guided';$('description').textContent=lesson.desc;$('objective').textContent=lesson.group==='A'?'Base: segurança, desenvolvimento, tática simples.':'Experimental: iniciativa, compensação e cálculo.';reset()};
 $('lesson').onchange();
 $('guided').onclick=()=>{mode='guided';reset()};
 $('free').onclick=()=>{mode='free';reset()};
 $('restart').onclick=reset;
-$('back').onclick=()=>{if(!history.length)return;let last=history.pop();if(mode==='guided'&&last&&last.move.color!==learnerColor()&&history.length){last=history.pop()}game.load(last.fen);progress=last.progress;mode=last.mode;stats={...last.stats};manualUserMoves=last.manualUserMoves;selected=null;promotions=[];notice='Lance desfeito';save();render()};
+$('back').onclick=()=>{if(!history.length)return;let last=history.pop();if(mode==='guided'&&last&&last.move.color!==learnerColor()&&history.length){last=history.pop()}game.load(last.fen);progress=last.progress;mode=last.mode;stats={...last.stats};manualUserMoves=last.manualUserMoves;selected=null;promotions=[];lineSuggestion=null;notice='Lance desfeito';save();render()};
 $('next').onclick=()=>{if(mode!=='guided'||progress>=lesson.moves.length)return;const san=lesson.moves[progress];const move=game.moves({verbose:true}).find(m=>m.san===san);if(!move){notice='Linha divergente. Reinicie.';render();return}commit({from:move.from,to:move.to,promotion:move.promotion},'auto')};
-$('hint').onclick=()=>{notice='Sugestão: '+lesson.moves[progress]+' — '+lesson.notes[progress];render()};
+$('hint').onclick=()=>{lineSuggestion=expectedMove();notice='Sugestão: '+lesson.moves[progress]+' — '+lesson.notes[progress];render()};
 $('export').onclick=()=>{const data={module:'xadrez_ab_lab_v1',exported_at:new Date().toISOString(),stats,lesson:lesson.id,mode,fen:game.fen(),moves:history.map(x=>x.move.san),note:'Dados locais experimentais; sem escrita canônica'};const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='xadrez_ab_lab.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
 </script></body></html>
