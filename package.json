@@ -1,0 +1,1 @@
+{"name":"xadrez-aberturas-lab-tests","private":true,"type":"module","scripts":{"test":"node --test tests/*.test.mjs"},"devDependencies":{"chess.js":"1.4.0"}}
