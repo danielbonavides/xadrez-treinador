@@ -2,7 +2,7 @@
 export function createBoardEffects({storage=globalThis.localStorage}={}){
  const key='xadrez_web_sound_volume_v1';
  let volume=0.8,context=null;
- try{const n=Number(storage.getItem(key));if(Number.isFinite(n)&&n>=0&&n<=1)volume=n}catch{}
+ try{const stored=storage.getItem(key);const n=Number(stored);if(stored!==null&&Number.isFinite(n)&&n>=0&&n<=1)volume=n}catch{}
  const setVolume=n=>{volume=Math.max(0,Math.min(1,Number(n)||0));try{storage.setItem(key,String(volume))}catch{}};
  function sound(kind){
   if(!volume)return;
