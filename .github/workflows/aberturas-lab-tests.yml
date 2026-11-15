@@ -1,0 +1,23 @@
+name: Aberturas A+B LAB tests
+on:
+  push:
+    branches:
+      - feature/treinador-aberturas-a-b
+  pull_request:
+    paths:
+      - aberturas-lab.html
+      - tests/**
+      - package.json
+      - .github/workflows/aberturas-lab-tests.yml
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --ignore-scripts --no-audit --no-fund
+      - run: npm test
