@@ -84,11 +84,12 @@ test('Safari startup: DOM helper declared before theme and audio setup',()=>{
  assert.equal(html.split('const $=id=>document.getElementById(id)').length-1,1);
 });
 
-test('style B: solid white glyphs with navy outline on all three themes',()=>{
- assert.match(html,/span\.textContent=glyph\[piece\.type\]/);
- assert.match(html,/\.sq \.piece\.white\{[^}]*-webkit-text-fill-color:#ffffff/);
- assert.match(html,/\.sq \.piece\.white\{[^}]*-webkit-text-stroke:1\.35px #102a43/);
- assert.match(html,/body\[data-theme="classic"\]/);
- assert.match(html,/body\[data-theme="light"\] \.sq \.piece\.white\{[^}]*-webkit-text-stroke:1\.35px #102a43/);
- assert.ok(!html.includes("glyph[piece.type].replace('♚','♔')"),'avoid hollow white Unicode glyph');
+test('piece renderer matches original trainer SVG styling',()=>{
+ assert.match(html,/createElementNS\('http:\/\/www\.w3\.org\/2000\/svg','svg'\)/);
+ assert.match(html,/svg\.setAttribute\('viewBox','0 0 100 100'\)/);
+ assert.match(html,/textNode\.setAttribute\('font-size','79'\)/);
+ assert.match(html,/textNode\.setAttribute\('fill',piece\.color==='w'\?'#fffaf0':'#142938'\)/);
+ assert.match(html,/textNode\.setAttribute\('stroke',piece\.color==='w'\?'#213748':'#e7f0e9'\)/);
+ assert.match(html,/textNode\.setAttribute\('stroke-width','1\.8'\)/);
+ assert.match(html,/\.sq svg\.piece-svg\{width:82%;height:82%/);
 });
