@@ -6,19 +6,25 @@ export class BrowserStockfish{
  async start(){
   if(this.ready)return;
   if(this.boot)return this.boot;
-  this.boot=new Promise((resolve,reject)=>{
+  this.boot=new Promise(async(resolve,reject)=>{
    let url,worker,done=false;
    const fail=e=>{if(done)return;done=true;clearTimeout(timer);worker?.terminate();if(url)URL.revokeObjectURL(url);this.worker=null;this.boot=null;reject(Error('Stockfish indisponível: '+(e?.message||'falha no carregamento'))) };
    const timer=setTimeout(()=>fail(Error('timeout de inicialização')),18000);
    try{
-    const code="importScripts("+JSON.stringify(ENGINE_URL)+");";
+    // Safari may reject cross-origin importScripts() from a blob worker.
+    // Fetch with CORS first; run fetched JS in same-origin blob worker.
+    const response=await fetch(ENGINE_URL,{mode:'cors',cache:'force-cache'});
+    if(!response.ok)throw Error('HTTP '+response.status+' ao baixar Stockfish');
+    const code=await response.text();
+    if(done)return;
+    if(code.length<10000)throw Error('arquivo do motor incompleto');
     url=URL.createObjectURL(new Blob([code],{type:'text/javascript'}));
     worker=new Worker(url);this.worker=worker;
     worker.onerror=fail;
     worker.onmessage=ev=>{
      for(const line of String(ev.data||'').split(/\r?\n/)){
       if(line==='uciok'){worker.postMessage('isready');continue}
-      if(line==='readyok'&&!done){done=true;clearTimeout(timer);URL.revokeObjectURL(url);this.ready=true;resolve();continue}
+      if(line==='readyok'&&!done){done=true;clearTimeout(timer);this.ready=true;resolve();continue}
       if(line.startsWith('info ')&&this.pending){
        const cp=line.match(/\bscore cp (-?\d+)/),mate=line.match(/\bscore mate (-?\d+)/),depth=line.match(/\bdepth (\d+)/),pv=line.match(/\bpv (.+)$/);
        if(cp||mate)this.pending.info={cp:cp?Number(cp[1]):null,mate:mate?Number(mate[1]):null,depth:depth?Number(depth[1]):null,pv:pv?pv[1].split(' ').slice(0,8):[]};
