@@ -28,7 +28,7 @@ class MockWorker {
  }
  postMessage(cmd){
   this.sent.push(cmd);
-  if(cmd==='uci')queueMicrotask(()=>this.onmessage?.({data:'id name Stockfish 19\\nuciok'}));
+  if(cmd==='uci')queueMicrotask(()=>this.onmessage?.({data:'id name Stockfish 19\nuciok'}));
   if(cmd==='isready')queueMicrotask(()=>this.onmessage?.({data:'readyok'}));
   if(cmd.startsWith('go ')&&this.respond)queueMicrotask(()=>{
    this.onmessage?.({data:'info depth 8 score cp 35 pv e2e4 e7e5 g1f3'});
@@ -81,9 +81,17 @@ test('rejects startup when browser lacks Web Worker',async()=>{
 test('real Stockfish Lite binary answers UCI bestmove in Node 22',async()=>{
  const {spawn}=await import('node:child_process');
  const {fileURLToPath}=await import('node:url');
- const executable=fileURLToPath(new URL('../vendor/stockfish/stockfish-19-lite-single.js',import.meta.url));
+ const fs=await import('node:fs');
+ const os=await import('node:os');
+ const path=await import('node:path');
+ const tempDir=fs.mkdtempSync(path.join(os.tmpdir(),'xadrez-sf-lite-'));
+ for(const suffix of ['js','wasm']){
+  fs.copyFileSync(fileURLToPath(new URL('../vendor/stockfish/stockfish-19-lite-single.'+suffix,import.meta.url)),path.join(tempDir,'stockfish-19-lite-single.'+suffix));
+ }
+ // Outside repo "type:module" scope: Stockfish.js expects CommonJS in Node CLI.
+ const executable=path.join(tempDir,'stockfish-19-lite-single.js');
  const child=spawn(process.execPath,[executable],{stdio:['pipe','pipe','pipe']});
- await new Promise((resolve,reject)=>{
+ try{await new Promise((resolve,reject)=>{
   let output='',stderr='',sent=false,settled=false;
   const timer=setTimeout(()=>finish(Error('Stockfish UCI startup timeout; stderr: '+stderr.slice(-400))),20000);
   function finish(error){
@@ -97,10 +105,10 @@ test('real Stockfish Lite binary answers UCI bestmove in Node 22',async()=>{
   child.stdout.on('data',data=>{
    output+=String(data);
    if(output.includes('uciok')&&!sent){
-    sent=true;child.stdin.write('isready\\nposition startpos\\ngo movetime 300\\n');
+    sent=true;child.stdin.write('isready\nposition startpos\ngo movetime 300\n');
    }
    if(/bestmove [a-h][1-8][a-h][1-8]/.test(output))finish();
   });
-  child.stdin.write('uci\\n');
- });
+  child.stdin.write('uci\n');
+ });}finally{fs.rmSync(tempDir,{recursive:true,force:true})}
 });
