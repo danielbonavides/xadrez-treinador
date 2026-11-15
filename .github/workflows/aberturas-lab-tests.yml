@@ -5,6 +5,7 @@ on:
       - feature/treinador-aberturas-a-b
   pull_request:
     paths:
+      - index.html
       - aberturas-lab.html
       - tests/**
       - package.json
