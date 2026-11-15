@@ -83,3 +83,12 @@ test('Safari startup: DOM helper declared before theme and audio setup',()=>{
  assert.ok(helper>0&&helper<theme&&theme<audio);
  assert.equal(html.split('const $=id=>document.getElementById(id)').length-1,1);
 });
+
+test('style B: solid white glyphs with navy outline on all three themes',()=>{
+ assert.match(html,/span\.textContent=glyph\[piece\.type\]/);
+ assert.match(html,/\.sq \.piece\.white\{[^}]*-webkit-text-fill-color:#ffffff/);
+ assert.match(html,/\.sq \.piece\.white\{[^}]*-webkit-text-stroke:1\.35px #102a43/);
+ assert.match(html,/body\[data-theme="classic"\]/);
+ assert.match(html,/body\[data-theme="light"\] \.sq \.piece\.white\{[^}]*-webkit-text-stroke:1\.35px #102a43/);
+ assert.ok(!html.includes("glyph[piece.type].replace('♚','♔')"),'avoid hollow white Unicode glyph');
+});
