@@ -27,9 +27,13 @@ export function createBoardEffects({storage=globalThis.localStorage}={}){
   if(!origin||!destination)return;
   const piece=origin.querySelector('.piece-svg');if(!piece)return;
   const a=origin.getBoundingClientRect(),b=destination.getBoundingClientRect();
-  if(typeof piece.animate!=='function')return;
-  const dx=b.left-a.left,dy=b.top-a.top;
-  piece.animate([{transform:'translate(0,0)'},{transform:'translate('+dx+'px,'+dy+'px)'}],{duration,easing:'cubic-bezier(.2,.65,.25,1)'});
+  if(typeof piece.animate!=='function'||!globalThis.document?.body)return;
+  const ghost=piece.cloneNode(true);const width=piece.getBoundingClientRect().width;
+  Object.assign(ghost.style,{position:'fixed',left:(a.left+(a.width-width)/2)+'px',top:(a.top+(a.height-width)/2)+'px',width:width+'px',height:width+'px',zIndex:'9999',pointerEvents:'none',margin:'0'});
+  document.body.appendChild(ghost);
+  const animation=ghost.animate([{transform:'translate(0,0)',opacity:1},{transform:'translate('+(b.left-a.left)+'px,'+(b.top-a.top)+'px)',opacity:1}],{duration,easing:'cubic-bezier(.2,.65,.25,1)'});
+  animation.onfinish=()=>ghost.remove();animation.oncancel=()=>ghost.remove();
+  setTimeout(()=>ghost.remove(),duration+150);
  }
  return {sound,animate,setVolume,get volume(){return volume}};
 }
