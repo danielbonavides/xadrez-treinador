@@ -152,7 +152,7 @@ test('inline browser scripts remain syntactically valid',async()=>{
  assert.doesNotThrow(()=>new vm.Script(main));
  const lab=html.split('<script type="module">')[1]?.split('</script>')[0];
  assert.ok(lab,'lab module');
- const withoutImports=lab.split('\\n').filter(line=>!line.startsWith('import ')).join('\\n');
+ const withoutImports=lab.split('\n').filter(line=>!line.startsWith('import ')).join('\n');
  assert.doesNotThrow(()=>new vm.Script(withoutImports));
  await import('../shared/board-effects.mjs');
  await import('../shared/stockfish-browser.mjs');
