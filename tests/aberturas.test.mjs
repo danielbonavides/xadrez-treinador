@@ -139,9 +139,11 @@ test('Stockfish and shared board effects wired in both trainers',()=>{
  assert.match(effects,/cloneNode\(true\)/);
  assert.match(effects,/storage\.setItem\(key,String\(volume\)\)/);
  assert.match(engine,/stockfish-19-asm\.js/);
+ assert.match(engine,/vendor\/stockfish/);
  assert.match(engine,/new Worker\(url\)/);
  assert.match(engine,/fetch\(ENGINE_URL/);
- assert.match(engine,/mode:'cors'/);
+ assert.doesNotMatch(engine,/cdn\.jsdelivr\.net/);
+ assert.match(engine,/mode:'same-origin'/);
  assert.doesNotMatch(engine,/const code="importScripts/);
  assert.match(engine,/go depth /);
  assert.match(engine,/bestmove /);
