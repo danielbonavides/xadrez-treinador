@@ -1,10 +1,10 @@
 # Stockfish Lite CI — PR #9
 
-- Commit tested: 
-- GitHub Actions: https://github.com/danielbonavides/xadrez-treinador/actions/runs/43754861651
+- Commit tested: ede8e12d182274dfc14b21799f6a99bdf2f3fc05
+- GitHub Actions run: https://github.com/danielbonavides/xadrez-treinador/actions/runs/43755060976
 - Result: FAIL
 - Node version: v22.23.4
-- Engine package: stockfish@19.0.1 lite single-threaded (JS + WASM)
+- Engine: stockfish@19.0.1 Lite single-threaded JS + WASM
 
 ## Test log
 
@@ -31,7 +31,7 @@ TAP version 13
 # Subtest: tests/aberturas.test.mjs
 not ok 1 - tests/aberturas.test.mjs
   ---
-  duration_ms: 26.688248
+  duration_ms: 38.693072
   type: 'test'
   location: '/home/runner/work/xadrez-treinador/xadrez-treinador/tests/aberturas.test.mjs:1:1'
   failureType: 'testCodeFailure'
@@ -43,13 +43,13 @@ not ok 1 - tests/aberturas.test.mjs
 # Subtest: Stockfish Lite files self-hosted, pinned and browser-loadable
 ok 2 - Stockfish Lite files self-hosted, pinned and browser-loadable
   ---
-  duration_ms: 5.981853
+  duration_ms: 9.847534
   type: 'test'
   ...
 # Subtest: Safari-style classic Worker: UCI handshake, scoring, difficulty and cancellation
 not ok 3 - Safari-style classic Worker: UCI handshake, scoring, difficulty and cancellation
   ---
-  duration_ms: 30021.187187
+  duration_ms: 30014.314051
   type: 'test'
   location: '/home/runner/work/xadrez-treinador/xadrez-treinador/tests/stockfish-worker.test.mjs:41:1'
   failureType: 'testCodeFailure'
@@ -64,19 +64,19 @@ not ok 3 - Safari-style classic Worker: UCI handshake, scoring, difficulty and c
 # Subtest: rejects engine failure, preserves actionable error and permits retry
 ok 4 - rejects engine failure, preserves actionable error and permits retry
   ---
-  duration_ms: 1.397268
+  duration_ms: 2.065269
   type: 'test'
   ...
 # Subtest: rejects startup when browser lacks Web Worker
 ok 5 - rejects startup when browser lacks Web Worker
   ---
-  duration_ms: 0.147261
+  duration_ms: 0.247741
   type: 'test'
   ...
 # Subtest: real Stockfish Lite binary answers UCI bestmove in Node 22
 not ok 6 - real Stockfish Lite binary answers UCI bestmove in Node 22
   ---
-  duration_ms: 24.557009
+  duration_ms: 33.33118
   type: 'test'
   location: '/home/runner/work/xadrez-treinador/xadrez-treinador/tests/stockfish-worker.test.mjs:81:1'
   failureType: 'testCodeFailure'
@@ -107,5 +107,5 @@ not ok 6 - real Stockfish Lite binary answers UCI bestmove in Node 22
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 30097.52281
+# duration_ms 30125.406979
 ```
