@@ -75,3 +75,11 @@ test('deviation displays expected move on board',()=>{
  assert.match(html,/Lance da linha:/);
  assert.match(html,/lineSuggestion=null;notice='Lance desfeito'/);
 });
+
+test('Safari startup: DOM helper declared before theme and audio setup',()=>{
+ const helper=html.indexOf('const $=id=>document.getElementById(id)');
+ const theme=html.indexOf("const THEME_KEY='xadrez_web_theme_v1'");
+ const audio=html.indexOf("const AUDIO_KEY='xadrez_web_sound_enabled_v1'");
+ assert.ok(helper>0&&helper<theme&&theme<audio);
+ assert.equal(html.split('const $=id=>document.getElementById(id)').length-1,1);
+});
