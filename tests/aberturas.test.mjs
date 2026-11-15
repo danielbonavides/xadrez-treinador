@@ -50,3 +50,11 @@ test('UI essentials and isolated storage',()=>{
  assert.ok(html.includes("xadrez_ab_lab_v1"));assert.ok(!html.includes('localStorage.clear'));
  assert.ok(html.includes('@media(max-width:730px)'));
 });
+
+test('guided mode auto-plays opponent and flips black board',()=>{
+ assert.match(html,/function autoOpponent\(\)/);
+ assert.match(html,/if\(source==='manual'&&mode==='guided'\)autoOpponent\(\)/);
+ assert.match(html,/notice='Pronto para treinar';render\(\);autoOpponent\(\)/);
+ assert.match(html,/learnerColor\(\)==='b'\?'hgfedcba'/);
+ assert.match(html,/last\.move\.color!==learnerColor\(\)/);
+});
