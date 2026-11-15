@@ -77,3 +77,30 @@ test('rejects startup when browser lacks Web Worker',async()=>{
  try{await assert.rejects(new BrowserStockfish().start(),/sem Web Worker\/WebAssembly/)}
  finally{globalThis.Worker=saved}
 });
+
+test('real Stockfish Lite binary answers UCI bestmove in Node 22',async()=>{
+ const {spawn}=await import('node:child_process');
+ const {fileURLToPath}=await import('node:url');
+ const executable=fileURLToPath(new URL('../vendor/stockfish/stockfish-19-lite-single.js',import.meta.url));
+ const child=spawn(process.execPath,[executable],{stdio:['pipe','pipe','pipe']});
+ await new Promise((resolve,reject)=>{
+  let output='',stderr='',sent=false,settled=false;
+  const timer=setTimeout(()=>finish(Error('Stockfish UCI startup timeout; stderr: '+stderr.slice(-400))),20000);
+  function finish(error){
+   if(settled)return;settled=true;clearTimeout(timer);
+   try{child.stdin.end()}catch{};child.kill();
+   if(error)reject(error);else resolve();
+  }
+  child.on('error',finish);
+  child.on('exit',code=>{if(!settled)finish(Error('Stockfish exited '+code+'; stderr: '+stderr.slice(-400)))});
+  child.stderr.on('data',data=>{stderr+=String(data)});
+  child.stdout.on('data',data=>{
+   output+=String(data);
+   if(output.includes('uciok')&&!sent){
+    sent=true;child.stdin.write('isready\\nposition startpos\\ngo movetime 300\\n');
+   }
+   if(/bestmove [a-h][1-8][a-h][1-8]/.test(output))finish();
+  });
+  child.stdin.write('uci\\n');
+ });
+});
