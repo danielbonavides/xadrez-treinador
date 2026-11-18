@@ -120,3 +120,46 @@ test('all nine opening endings leave valid continuation for learner',()=>{
   assert.ok(game.moves().length>0);
  }
 });
+
+test('Stockfish and shared board effects wired in both trainers',()=>{
+ const index=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+ const effects=readFileSync(new URL('../shared/board-effects.mjs',import.meta.url),'utf8');
+ const engine=readFileSync(new URL('../shared/stockfish-browser.mjs',import.meta.url),'utf8');
+ for(const page of [html,index]){
+  assert.match(page,/shared\/board-effects\.mjs/);
+  assert.match(page,/shared\/stockfish-browser\.mjs/);
+  assert.match(page,/Stockfish nível/);
+  assert.match(page,/Analisar posição/);
+  assert.match(page,/Volume/);
+ }
+ assert.match(index,/Continuar contra Stockfish/);
+ assert.match(index,/function applyContinuation\(move\)/);
+ assert.match(html,/function autoContinuation\(\)/);
+ assert.match(effects,/prefers-reduced-motion: reduce/);
+ assert.match(effects,/cloneNode\(true\)/);
+ assert.match(effects,/storage\.setItem\(key,String\(volume\)\)/);
+ assert.match(engine,/stockfish-19-lite-single\.js/);
+ assert.match(engine,/stockfish-19-lite-single\.wasm/);
+ assert.match(engine,/vendor\/stockfish/);
+ assert.match(engine,/new Worker\(ENGINE_URL,\{type:'classic'/);
+ assert.match(engine,/WebAssembly/);
+ assert.doesNotMatch(engine,/cdn\.jsdelivr\.net/);
+ assert.doesNotMatch(engine,/importScripts\(/);
+ assert.doesNotMatch(engine,/stockfish-19-asm\.js/);
+ assert.match(engine,/go depth /);
+ assert.match(engine,/bestmove /);
+});
+
+test('inline browser scripts remain syntactically valid',async()=>{
+ const vm=await import('node:vm');
+ const index=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+ const main=index.split('<script>')[1]?.split('</script>')[0];
+ assert.ok(main,'main inline script');
+ assert.doesNotThrow(()=>new vm.Script(main));
+ const lab=html.split('<script type="module">')[1]?.split('</script>')[0];
+ assert.ok(lab,'lab module');
+ const withoutImports=lab.split('\n').filter(line=>!line.startsWith('import ')).join('\n');
+ assert.doesNotThrow(()=>new vm.Script(withoutImports));
+ await import('../shared/board-effects.mjs');
+ await import('../shared/stockfish-browser.mjs');
+});

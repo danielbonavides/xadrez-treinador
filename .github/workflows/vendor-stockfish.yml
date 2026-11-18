@@ -1,0 +1,88 @@
+name: Vendor Stockfish 19 Lite Single WASM
+on:
+  push:
+    branches:
+      - feature/stockfish-audio-animation-v1
+    paths:
+      - '.github/workflows/vendor-stockfish.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  vendor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/stockfish-audio-animation-v1
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Fetch, pin and verify exact Stockfish 19.0.1 Lite single-threaded build
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm pack stockfish@19.0.1 --pack-destination "$RUNNER_TEMP"
+          mkdir -p "$RUNNER_TEMP/stockfish-extract" vendor/stockfish
+          tar -xzf "$RUNNER_TEMP/stockfish-19.0.1.tgz" -C "$RUNNER_TEMP/stockfish-extract"
+          src="$RUNNER_TEMP/stockfish-extract/package"
+          test -s "$src/bin/stockfish-19-lite-single.js"
+          test -s "$src/bin/stockfish-19-lite-single.wasm"
+          echo "ccb130d7ff29408531c47d859a49f91d59d4f482d05a53eb1a3231a4f624c91a  $src/bin/stockfish-19-lite-single.js" | sha256sum --check
+          echo "ee4f115bdb2d32cadf96cada104a05b5ec257d7ad6f57582190b49bc71f096de  $src/bin/stockfish-19-lite-single.wasm" | sha256sum --check
+          cp "$src/bin/stockfish-19-lite-single.js" vendor/stockfish/
+          cp "$src/bin/stockfish-19-lite-single.wasm" vendor/stockfish/
+          if test -s "$src/Copying.txt"; then
+            cp "$src/Copying.txt" vendor/stockfish/LICENSE-STOCKFISH.txt
+          elif test -s "$src/COPYING.txt"; then
+            cp "$src/COPYING.txt" vendor/stockfish/LICENSE-STOCKFISH.txt
+          else
+            echo 'Missing GPL-3.0 license in pinned package'; exit 1
+          fi
+          rm -f vendor/stockfish/stockfish-19-asm.js
+          sha256sum vendor/stockfish/stockfish-19-lite-single.js vendor/stockfish/stockfish-19-lite-single.wasm > vendor/stockfish/SHA256SUMS
+          wc -c vendor/stockfish/stockfish-19-lite-single.js vendor/stockfish/stockfish-19-lite-single.wasm
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install test-only dependencies
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Run regressions and real Stockfish Lite UCI smoke
+        id: qa
+        shell: bash
+        run: |
+          set +e
+          npm test > "$RUNNER_TEMP/xadrez-test-output.txt" 2>&1
+          code=$?
+          set -e
+          mkdir -p docs/qa
+          {
+            echo '# Stockfish Lite CI — PR #9'
+            echo
+            echo "- Commit tested: $(git rev-parse HEAD)"
+            echo "- GitHub Actions run: https://github.com/danielbonavides/xadrez-treinador/actions/runs/${GITHUB_RUN_ID}"
+            echo "- Result: $(if [ "$code" -eq 0 ]; then echo PASS; else echo FAIL; fi)"
+            echo "- Node version: $(node --version)"
+            echo "- Engine: stockfish@19.0.1 Lite single-threaded JS + WASM"
+            echo
+            echo '## Test log'
+            echo
+            echo '```text'
+            tail -n 250 "$RUNNER_TEMP/xadrez-test-output.txt"
+            echo '```'
+          } > docs/qa/stockfish-lite-ci.md
+          echo "test_exit_code=$code" >> "$GITHUB_OUTPUT"
+      - name: Commit verified engine assets to isolated PR branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A vendor/stockfish docs/qa/stockfish-lite-ci.md
+          if git diff --cached --quiet; then echo 'Engine assets already match pinned package'; exit 0; fi
+          git commit -m 'ci: verify Stockfish 19 Lite engine and save QA evidence'
+          git push origin HEAD:feature/stockfish-audio-animation-v1
+      - name: Enforce regression result
+        shell: bash
+        run: exit "${{ steps.qa.outputs.test_exit_code }}"

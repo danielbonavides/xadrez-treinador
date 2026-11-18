@@ -3,10 +3,21 @@ on:
   push:
     branches:
       - feature/treinador-aberturas-a-b
+      - feature/stockfish-audio-animation-v1
+    paths:
+      - index.html
+      - aberturas-lab.html
+      - shared/**
+      - vendor/stockfish/**
+      - tests/**
+      - package.json
+      - .github/workflows/aberturas-lab-tests.yml
   pull_request:
     paths:
       - index.html
       - aberturas-lab.html
+      - shared/**
+      - vendor/stockfish/**
       - tests/**
       - package.json
       - .github/workflows/aberturas-lab-tests.yml
