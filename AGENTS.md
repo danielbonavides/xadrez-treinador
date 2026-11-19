@@ -13,3 +13,9 @@ Container efêmero: arquivo só em `/tmp`, `/home`, `.runtime/` ou sandbox está
 - Não enviar ZIPs, PGNs, matrizes ou dados do jogador ao Git.
 - Se uma tarefa precisar guardar artefatos que devem sobreviver à sessão, registrar `BLOCKED_PERSISTENCE`, não improvisar destino e pedir ao titular um destino autorizado. Com destino autorizado, seguir `docs/governanca/PERSISTENCE_PROTOCOL_V1.3.md` (prova de ida e volta antes de computação pesada, checkpoints e readback final).
 - Destino de armazenamento autorizado não autoriza merge, release, GitHub Pages nem Production.
+
+## PEU-001 — economia de utilização (19/11/2026)
+
+Seguir `docs/governanca/PEU_001_ECONOMIA_UTILIZACAO.md`: D0 Chat para especificação e análise, D1 script local para cálculo/QA, D2 Codex para implementação e testes direcionados, D3 Work só se navegação GUI multietapas necessária. Uma tarefa por objetivo, leitura por arquivo/diff, evitar tentativas equivalentes repetidas; entregar handoff curto com revisão, testes/readback e `PASS/PARTIAL/BLOCKED`.
+
+**Sem redução de segurança ou rigor:** preservar testes de regras de xadrez, privacidade, ausência de destino científico autorizado e proibições de merge/release/publicação sem aprovação.
