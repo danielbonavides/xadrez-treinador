@@ -1,5 +1,8 @@
 # AGENTS.md — XADREZ Treinador
 
+## Copilot Free — adoção consultiva condicionada (25/11/2026)
+Auxiliar manual D0/D2, conforme [protocolo local](docs/governanca/COPILOT_FREE_CONSULTIVO_V1.md) e adaptador `.github/copilot-instructions.md`. Preflight de plano Free e privacidade obrigatório, ainda não verificado; até confirmar, somente exemplos sintéticos/minimizados sem anexar repositório. Sem autonomia, credenciais, dados reais, ações externas, gates alterados ou merge. A autoridade local e todas as regras abaixo permanecem vigentes.
+
 Orientações para agentes responsáveis pelo aplicativo de treino de xadrez.
 
 - Preservar regras de movimentos legais, orientações de tabuleiro, histórico, roque, en passant, promoção, estado e preferências. Alteração de comportamento exige testes apropriados.
