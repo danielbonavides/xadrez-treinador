@@ -19,3 +19,5 @@ Container efêmero: arquivo só em `/tmp`, `/home`, `.runtime/` ou sandbox está
 Seguir `docs/governanca/PEU_001_ECONOMIA_UTILIZACAO.md`: D0 Chat para especificação e análise, D1 script local para cálculo/QA, D2 Codex para implementação e testes direcionados, D3 Work só se navegação GUI multietapas necessária. Uma tarefa por objetivo, leitura por arquivo/diff, evitar tentativas equivalentes repetidas; entregar handoff curto com revisão, testes/readback e `PASS/PARTIAL/BLOCKED`.
 
 **Sem redução de segurança ou rigor:** preservar testes de regras de xadrez, privacidade, ausência de destino científico autorizado e proibições de merge/release/publicação sem aprovação.
+
+- Graphify: consulta padrão D0/D2 nas alterações relevantes, quando índice autorizado e SHA verificado; seguir a seção específica do PEU-001, com fallback GitHub/testes, sem gate adicional, revisão automática obrigatória ou ampliação de acesso. Preservar privacidade, plano Free e gates locais.
