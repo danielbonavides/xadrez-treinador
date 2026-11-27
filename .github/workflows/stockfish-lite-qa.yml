@@ -1,0 +1,76 @@
+name: Stockfish Lite integration QA — branch only
+on:
+  push:
+    branches:
+      - feature/stockfish-audio-animation-v1
+    paths:
+      - '.github/workflows/stockfish-lite-qa.yml'
+      - 'shared/stockfish-browser.mjs'
+      - 'vendor/stockfish/**'
+      - 'tests/**'
+      - 'index.html'
+      - 'aberturas-lab.html'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: stockfish-lite-branch-qa
+  cancel-in-progress: true
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/stockfish-audio-animation-v1
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify binary source and install test-only dependencies
+        run: |
+          set -euo pipefail
+          sha256sum --check vendor/stockfish/SHA256SUMS
+          test -s vendor/stockfish/LICENSE-STOCKFISH.txt
+          npm install --ignore-scripts --no-audit --no-fund
+      - name: Full regression, WASM validation and real UCI smoke
+        id: run_tests
+        shell: bash
+        run: |
+          set +e
+          npm test > "$RUNNER_TEMP/xadrez-test-output.txt" 2>&1
+          code=$?
+          set -e
+          mkdir -p docs/qa
+          {
+            echo '# Stockfish Lite CI — PR #9'
+            echo
+            echo "- Commit tested: $(git rev-parse HEAD)"
+            echo "- GitHub Actions: https://github.com/danielbonavides/xadrez-treinador/actions/runs/${GITHUB_RUN_ID}"
+            echo "- Result: $(if [ "$code" -eq 0 ]; then echo PASS; else echo FAIL; fi)"
+            echo "- Node version: $(node --version)"
+            echo "- Engine package: stockfish@19.0.1 lite single-threaded (JS + WASM)"
+            echo
+            echo '## Test log'
+            echo
+            echo '```text'
+            tail -n 250 "$RUNNER_TEMP/xadrez-test-output.txt"
+            echo '```'
+          } > docs/qa/stockfish-lite-ci.md
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+      - name: Persist human-readable CI evidence on isolated branch
+        if: always() && steps.run_tests.outcome == 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/qa/stockfish-lite-ci.md
+          if ! git diff --cached --quiet; then
+            git commit -m 'ci: persist Stockfish Lite QA evidence on isolated branch'
+            git push origin HEAD:feature/stockfish-audio-animation-v1
+          fi
+      - name: Enforce test result
+        if: steps.run_tests.outcome == 'success'
+        shell: bash
+        run: exit "${{ steps.run_tests.outputs.code }}"
