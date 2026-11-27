@@ -107,3 +107,9 @@ test('toque no modo três lances identifica acerto sem alterar histórico G5',as
  assert.equal(b.run('__audioEvents[1]'),'check'); // o primeiro lance dessa variante dá xeque; prioridade sobre acerto.
  assert.equal(b.run('attempts.length'),0);
 });
+
+test('preview A+B points to the real sibling trainer without changing production root',()=>{
+ assert.match(html,/<a class="nav-ab" href="\.\.\/aberturas-lab\.html"/);
+ assert(fs.existsSync('aberturas-lab.html'));
+ assert.match(fs.readFileSync('index.html','utf8'),/<a class="nav-ab" href="\.\/aberturas-lab\.html"/);
+});
